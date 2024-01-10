@@ -24,16 +24,32 @@ type Object struct {
 
 	// the object data itself
 	ObjectName string
+	Vertexes   []Vertex3d
+	Primitives []*Primitive
 }
 
 func (o *Object) Print(tabAmount int) {
 	spaces := strings.Repeat(" ", tabAmount)
-	str := fmt.Sprintf("%+#v", o)
-	str = strings.Replace(str, " ", "\n"+spaces, -1)
-	str = strings.Replace(str, "{", "{\n"+spaces, -1)
-	str = strings.Replace(str, "}", "\n}"+spaces, -1)
-	str = strings.Replace(str, ":", ": ", -1)
-	fmt.Printf(spaces+"%s\n", str)
+	result := spaces + "{\n"
+
+	result += fmt.Sprintf(spaces+"  Object name: %s,\n", o.ObjectName)
+	result += fmt.Sprintf(spaces+"  XFromParent: %d,\n", o.XFromParent)
+	result += fmt.Sprintf(spaces+"  YFromParent: %d,\n", o.YFromParent)
+	result += fmt.Sprintf(spaces+"  ZFromParent: %d,\n", o.ZFromParent)
+	result += fmt.Sprintf(spaces + "  Vertexes: [\n")
+	for index, v := range o.Vertexes {
+		result += fmt.Sprintf(spaces+"    %d: %d, %d, %d\n", index, v.x, v.y, v.z)
+	}
+	result += fmt.Sprintf(spaces + "  ]\n")
+
+	result += fmt.Sprintf(spaces + "  Primitives: [\n")
+	for _, prim := range o.Primitives {
+		result += prim.ToString(tabAmount + 4)
+	}
+	result += fmt.Sprintf(spaces + "  ]\n")
+	result += fmt.Sprintf(spaces + "}\n")
+
+	fmt.Printf(result)
 }
 
 func ReadObjectFromReader(r *binaryreader.Reader, modelOffset int) *Object {
@@ -54,5 +70,7 @@ func ReadObjectFromReader(r *binaryreader.Reader, modelOffset int) *Object {
 	}
 
 	obj.ObjectName = r.ReadNullTermStringFromBytesArray(0, obj.OffsetToObjectName)
+	obj.Vertexes = ReadVertexesFromReader(r, obj.OffsetToVertexArray, obj.NumberOfVertexes)
+	obj.Primitives = ReadPrimitivesArrayFromReader(r, obj.OffsetToPrimitiveArray, obj.NumberOfPrimitives)
 	return obj
 }

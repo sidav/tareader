@@ -11,7 +11,8 @@ func main() {
 	r.ReadFromFile("armsy.3do")
 
 	obj := object3d.ReadObjectFromReader(r, 0)
-	showAllChildsAndSiblings(r, obj, 0)
+	obj.Print(0)
+	// showAllChildsAndSiblings(r, obj, 0)
 	pp("Texture names: %s", r.ReadNullTermStringFromBytesArray(0, 52))
 }
 

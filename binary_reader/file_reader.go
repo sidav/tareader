@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"os"
 )
 
@@ -24,7 +25,18 @@ func (mr *Reader) ReadFromFile(fileName string) {
 }
 
 func (mr *Reader) ReadIntFromBytesArray(baseOffset, offset int) int {
-	return int(binary.LittleEndian.Uint32(mr.fileBytes[baseOffset+offset : baseOffset+offset+4]))
+	fmt.Printf("Reading INT32 at 0x%X (%d+%d): ", baseOffset+offset, baseOffset, offset)
+	fmt.Printf("Got %x\n", mr.fileBytes[baseOffset+offset:baseOffset+offset+4])
+	uint32Value := binary.LittleEndian.Uint32(mr.fileBytes[baseOffset+offset : baseOffset+offset+4])
+	int32Value := int32(uint32Value)
+	return int(int32Value)
+}
+
+func (mr *Reader) ReadUint16FromBytesArray(baseOffset, offset int) int {
+	fmt.Printf("Reading UINT16 at 0x%X (%d+%d): ", baseOffset+offset, baseOffset, offset)
+	fmt.Printf("Got %x\n", mr.fileBytes[baseOffset+offset:baseOffset+offset+2])
+	uint16Value := binary.LittleEndian.Uint16(mr.fileBytes[baseOffset+offset : baseOffset+offset+2])
+	return int(uint16Value)
 }
 
 func (mr *Reader) ReadNullTermStringFromBytesArray(baseOffset, offset int) string {
@@ -38,5 +50,6 @@ func (mr *Reader) ReadNullTermStringFromBytesArray(baseOffset, offset int) strin
 		buff.WriteByte(byteHere)
 		index++
 	}
+	return buff.String()
 	panic("No end on N-T string in sight!")
 }
