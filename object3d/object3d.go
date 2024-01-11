@@ -36,20 +36,47 @@ func (o *Object) Print(tabAmount int) {
 	result += fmt.Sprintf(spaces+"  XFromParent: %d,\n", o.XFromParent)
 	result += fmt.Sprintf(spaces+"  YFromParent: %d,\n", o.YFromParent)
 	result += fmt.Sprintf(spaces+"  ZFromParent: %d,\n", o.ZFromParent)
-	result += fmt.Sprintf(spaces + "  Vertexes: [\n")
+	result += fmt.Sprintf(spaces+"  Vertexes (%d total): [\n", len(o.Vertexes))
 	for index, v := range o.Vertexes {
 		result += fmt.Sprintf(spaces+"    %d: %d, %d, %d\n", index, v.x, v.y, v.z)
 	}
 	result += fmt.Sprintf(spaces + "  ]\n")
 
-	result += fmt.Sprintf(spaces + "  Primitives: [\n")
+	result += fmt.Sprintf(spaces+"  Primitives (%d total): [\n", len(o.Primitives))
 	for _, prim := range o.Primitives {
 		result += prim.ToString(tabAmount + 4)
 	}
 	result += fmt.Sprintf(spaces + "  ]\n")
+	result += spaces + o.gatherParsedPrimitiveMetadata()
 	result += fmt.Sprintf(spaces + "}\n")
 
 	fmt.Printf(result)
+}
+
+func (obj *Object) gatherParsedPrimitiveMetadata() string {
+	str := "Primitives metadata: "
+	// find maxIndex vertex index
+	minIndex, maxIndex := 65536, 0
+	minVertices, maxVertices := 65536, 0
+	for _, p := range obj.Primitives {
+		for _, ind := range p.vertexIndices {
+			if ind < minIndex {
+				minIndex = ind
+			}
+			if ind > maxIndex {
+				maxIndex = ind
+			}
+		}
+		numVerts := len(p.vertexIndices)
+		if numVerts > maxVertices {
+			maxVertices = numVerts
+		}
+		if numVerts < minVertices {
+			minVertices = numVerts
+		}
+	}
+	str += fmt.Sprintf("Vertex counts: %d-%d, vertex indices: %d-%d\n", minVertices, maxVertices, minIndex, maxIndex)
+	return str
 }
 
 func ReadObjectFromReader(r *binaryreader.Reader, modelOffset int) *Object {

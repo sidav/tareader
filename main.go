@@ -13,7 +13,6 @@ func main() {
 	obj := object3d.ReadObjectFromReader(r, 0)
 	obj.Print(0)
 	// showAllChildsAndSiblings(r, obj, 0)
-	pp("Texture names: %s", r.ReadNullTermStringFromBytesArray(0, 52))
 }
 
 func showAllChildsAndSiblings(r *binaryreader.Reader, obj *object3d.Object, recursionDepth int) {
