@@ -11,20 +11,7 @@ func main() {
 	r.ReadFromFile("armsy.3do")
 
 	obj := object3d.ReadObjectFromReader(r, 0)
-	obj.Print(0)
-	// showAllChildsAndSiblings(r, obj, 0)
-}
-
-func showAllChildsAndSiblings(r *binaryreader.Reader, obj *object3d.Object, recursionDepth int) {
-	obj.Print(recursionDepth * 2)
-	if obj.OffsetToChildObject != 0 {
-		pp("Child (depth %d) at %d: ", recursionDepth, obj.OffsetToChildObject)
-		showAllChildsAndSiblings(r, object3d.ReadObjectFromReader(r, obj.OffsetToChildObject), recursionDepth+1)
-	}
-	if obj.OffsetToSiblingObject != 0 {
-		pp("Sibling (depth %d) at %d: ", recursionDepth, obj.OffsetToSiblingObject)
-		showAllChildsAndSiblings(r, object3d.ReadObjectFromReader(r, obj.OffsetToSiblingObject), recursionDepth+1)
-	}
+	fmt.Printf(obj.ToString(0))
 }
 
 func pp(str string, args ...interface{}) {

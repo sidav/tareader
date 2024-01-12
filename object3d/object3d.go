@@ -23,12 +23,14 @@ type Object struct {
 	OffsetToChildObject        int
 
 	// the object data itself
-	ObjectName string
-	Vertexes   []Vertex3d
-	Primitives []*Primitive
+	ObjectName    string
+	Vertexes      []Vertex3d
+	Primitives    []*Primitive
+	ChildObject   *Object
+	SiblingObject *Object
 }
 
-func (o *Object) Print(tabAmount int) {
+func (o *Object) ToString(tabAmount int) string {
 	spaces := strings.Repeat(" ", tabAmount)
 	result := spaces + "{\n"
 
@@ -47,10 +49,18 @@ func (o *Object) Print(tabAmount int) {
 		result += prim.ToString(tabAmount + 4)
 	}
 	result += fmt.Sprintf(spaces + "  ]\n")
-	result += spaces + o.gatherParsedPrimitiveMetadata()
+	result += spaces + "  " + o.gatherParsedPrimitiveMetadata()
+
+	if o.ChildObject != nil {
+		result += o.ChildObject.ToString(tabAmount + 2)
+	}
+	if o.SiblingObject != nil {
+		result += o.SiblingObject.ToString(tabAmount + 2)
+	}
+
 	result += fmt.Sprintf(spaces + "}\n")
 
-	fmt.Printf(result)
+	return result
 }
 
 func (obj *Object) gatherParsedPrimitiveMetadata() string {
@@ -99,5 +109,13 @@ func ReadObjectFromReader(r *binaryreader.Reader, modelOffset int) *Object {
 	obj.ObjectName = r.ReadNullTermStringFromBytesArray(0, obj.OffsetToObjectName)
 	obj.Vertexes = ReadVertexesFromReader(r, obj.OffsetToVertexArray, obj.NumberOfVertexes)
 	obj.Primitives = ReadPrimitivesArrayFromReader(r, obj.OffsetToPrimitiveArray, obj.NumberOfPrimitives)
+
+	if obj.OffsetToChildObject != 0 {
+		obj.ChildObject = ReadObjectFromReader(r, obj.OffsetToChildObject)
+	}
+	if obj.OffsetToSiblingObject != 0 {
+		obj.SiblingObject = ReadObjectFromReader(r, obj.OffsetToSiblingObject)
+	}
+
 	return obj
 }
