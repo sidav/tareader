@@ -39,9 +39,9 @@ func (mr *Reader) ReadUint16FromBytesArray(baseOffset, offset int) int {
 }
 
 func (mr *Reader) ReadNullTermStringFromBytesArray(baseOffset, offset int) string {
-	buff := bytes.NewBufferString("")
+	var buff bytes.Buffer
 	index := 0
-	for index < 10000 {
+	for index < 256 {
 		byteHere := mr.fileBytes[baseOffset+offset+index]
 		if byteHere == 0x00 {
 			return buff.String()
@@ -49,6 +49,8 @@ func (mr *Reader) ReadNullTermStringFromBytesArray(baseOffset, offset int) strin
 		buff.WriteByte(byteHere)
 		index++
 	}
-	return buff.String()
-	panic("No end on N-T string in sight!")
+	if index == 0 {
+		return ""
+	}
+	panic("Null-terminated string longer than 256 bytes!")
 }

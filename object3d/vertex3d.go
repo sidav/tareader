@@ -18,3 +18,8 @@ func ReadVertexesFromReader(r *binaryreader.Reader, vertexArrayOffset, vertexCou
 	}
 	return vertexArray
 }
+
+// Bugged for negatives.
+// func intToFixedPoint(x int) (integer, real int) {
+// 	return x >> 16, x ^ (65535 << 16)
+// }

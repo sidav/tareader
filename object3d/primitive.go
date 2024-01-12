@@ -1,8 +1,6 @@
 package object3d
 
 import (
-	"fmt"
-	"strings"
 	binaryreader "totala_reader/binary_reader"
 )
 
@@ -11,17 +9,6 @@ type Primitive struct {
 	IsColored     bool
 	TextureName   string
 	vertexIndices []int
-}
-
-func (p *Primitive) ToString(spacesNum int) string {
-	spaces := strings.Repeat(" ", spacesNum)
-	str := spaces + "{\n"
-	str += fmt.Sprintf(spaces+"  ColorPaletteIndex: %d,\n", p.ColorIndex)
-	str += fmt.Sprintf(spaces+"  IsColored: %v,\n", p.IsColored)
-	str += fmt.Sprintf(spaces+"  TextureName: %s,\n", p.TextureName)
-	str += fmt.Sprintf(spaces+"  VertexIndices: %v,\n", p.vertexIndices)
-	str += spaces + "}\n"
-	return str
 }
 
 func ReadPrimitiveFromReader(r *binaryreader.Reader, primOffset int) *Primitive {
