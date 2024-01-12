@@ -7,12 +7,12 @@ import (
 
 func (o *Object) ToString(tabAmount int) string {
 	spaces := strings.Repeat(" ", tabAmount)
-	result := spaces + "{\n"
+	result := ""
 
 	result += fmt.Sprintf(spaces+"  Object name: %s,\n", o.ObjectName)
-	result += fmt.Sprintf(spaces+"  XFromParent: %d,\n", o.XFromParent)
-	result += fmt.Sprintf(spaces+"  YFromParent: %d,\n", o.YFromParent)
-	result += fmt.Sprintf(spaces+"  ZFromParent: %d,\n", o.ZFromParent)
+	result += fmt.Sprintf(spaces+"  XFromParent: %.2f,\n", FixedPointToFloat(o.XFromParent))
+	result += fmt.Sprintf(spaces+"  YFromParent: %.2f,\n", FixedPointToFloat(o.YFromParent))
+	result += fmt.Sprintf(spaces+"  ZFromParent: %.2f,\n", FixedPointToFloat(o.ZFromParent))
 	result += fmt.Sprintf(spaces+"  Vertexes (%d total): [\n", len(o.Vertexes))
 	for index, v := range o.Vertexes {
 		// result += fmt.Sprintf(spaces+"    %3d: %s\n", index, v.ToString(0))
@@ -20,31 +20,36 @@ func (o *Object) ToString(tabAmount int) string {
 	}
 	result += fmt.Sprintf(spaces + "  ],\n")
 
-	result += fmt.Sprintf(spaces+"  Primitives (%d total): [\n", len(o.Primitives))
-	for _, prim := range o.Primitives {
-		result += prim.ToString(tabAmount + 4)
-	}
-	result += fmt.Sprintf(spaces + "  ]\n")
+	if len(o.Primitives) > 0 {
+		result += fmt.Sprintf(spaces+"  Primitives (%d total): [\n", len(o.Primitives))
+		for _, prim := range o.Primitives {
+			result += prim.ToString(tabAmount + 4)
+		}
+		result += fmt.Sprintf(spaces + "  ]\n")
 
-	result += fmt.Sprintf(spaces + "  Selection primitive: ")
-	if o.SelectionPrimitive != nil {
-		result += "{\n"
-		result += o.SelectionPrimitive.ToString(tabAmount + 4)
-		result += fmt.Sprintf(spaces + "  }\n")
+		result += fmt.Sprintf(spaces + "  Selection primitive: ")
+		if o.SelectionPrimitive != nil {
+			result += "{\n"
+			result += o.SelectionPrimitive.ToString(tabAmount + 4)
+			result += fmt.Sprintf(spaces + "  }\n")
+		} else {
+			result += "NULL,\n"
+		}
+		result += spaces + "  " + o.gatherParsedPrimitiveMetadata()
 	} else {
-		result += "NULL,\n"
+		result += fmt.Sprintf(spaces + "  Primitives: NONE;\n")
 	}
-
-	result += spaces + "  " + o.gatherParsedPrimitiveMetadata()
 
 	if o.ChildObject != nil {
+		result += spaces + "  Child object: {\n"
 		result += o.ChildObject.ToString(tabAmount + 2)
+		result += fmt.Sprintf(spaces + "  }\n")
 	}
 	if o.SiblingObject != nil {
+		result += spaces + "  Sibling object: {\n"
 		result += o.SiblingObject.ToString(tabAmount + 2)
+		result += fmt.Sprintf(spaces + "  }\n")
 	}
-
-	result += fmt.Sprintf(spaces + "}\n")
 
 	return result
 }
@@ -52,8 +57,8 @@ func (o *Object) ToString(tabAmount int) string {
 func (obj *Object) gatherParsedPrimitiveMetadata() string {
 	str := "Primitives metadata: "
 	// find maxIndex vertex index
-	minIndex, maxIndex := 65536, 0
-	minVertices, maxVertices := 65536, 0
+	minIndex, maxIndex := 65536, -1
+	minVertices, maxVertices := 65536, -1
 	for _, p := range obj.Primitives {
 		for _, ind := range p.vertexIndices {
 			if ind < minIndex {
@@ -71,7 +76,8 @@ func (obj *Object) gatherParsedPrimitiveMetadata() string {
 			minVertices = numVerts
 		}
 	}
-	str += fmt.Sprintf("Vertex counts: %d-%d, vertex indices: %d-%d\n", minVertices, maxVertices, minIndex, maxIndex)
+	str += fmt.Sprintf("Vertex counts: %d-%d, vertex indices: %d-%d (max possible %d)"+
+		"\n", minVertices, maxVertices, minIndex, maxIndex, len(obj.Vertexes)-1)
 	return str
 }
 
@@ -93,7 +99,8 @@ func (v *Vertex3d) ToString(tabAmount int) string {
 
 func (v *Vertex3d) ToFloatsString(tabAmount int) string {
 	spaces := strings.Repeat(" ", tabAmount)
-	return spaces + fmt.Sprintf("[%.2f, %.2f, %.2f],", float64(v.x)/65536, float64(v.y)/65536, float64(v.z)/65536)
+	return spaces + fmt.Sprintf("[%.2f, %.2f, %.2f],",
+		FixedPointToFloat(v.x), FixedPointToFloat(v.y), FixedPointToFloat(v.z))
 }
 
 // func (v *Vertex3d) ToFixedPointsString(tabAmount int) string {
