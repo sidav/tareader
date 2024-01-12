@@ -8,7 +8,7 @@ type Primitive struct {
 	ColorIndex    int
 	IsColored     bool
 	TextureName   string
-	vertexIndices []int
+	VertexIndices []int
 }
 
 func ReadPrimitiveFromReader(r *binaryreader.Reader, primOffset int) *Primitive {
@@ -27,9 +27,9 @@ func ReadPrimitiveFromReader(r *binaryreader.Reader, primOffset int) *Primitive 
 	prim.IsColored = IsColored != 0
 	prim.TextureName = r.ReadNullTermStringFromBytesArray(OffsetToTextureName, 0)
 	// reading the vertex indices array
-	prim.vertexIndices = make([]int, NumberOfVertexIndexes)
+	prim.VertexIndices = make([]int, NumberOfVertexIndexes)
 	for i := 0; i < NumberOfVertexIndexes; i++ {
-		prim.vertexIndices[i] = r.ReadUint16FromBytesArray(OffsetToVertexIndexArray, i*2)
+		prim.VertexIndices[i] = r.ReadUint16FromBytesArray(OffsetToVertexIndexArray, i*2)
 	}
 	return &prim
 }

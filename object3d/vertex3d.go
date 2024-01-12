@@ -6,6 +6,10 @@ type Vertex3d struct {
 	x, y, z int
 }
 
+func (v *Vertex3d) ToFloats() (fx, fy, fz float64) {
+	return FixedPointToFloat(v.x), FixedPointToFloat(v.y), FixedPointToFloat(v.z)
+}
+
 func ReadVertexesFromReader(r *binaryreader.Reader, vertexArrayOffset, vertexCount int) []Vertex3d {
 	var vertexArray []Vertex3d
 	for vInd := 0; vInd < vertexCount; vInd++ {

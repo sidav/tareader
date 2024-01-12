@@ -60,7 +60,7 @@ func (obj *Object) gatherParsedPrimitiveMetadata() string {
 	minIndex, maxIndex := 65536, -1
 	minVertices, maxVertices := 65536, -1
 	for _, p := range obj.Primitives {
-		for _, ind := range p.vertexIndices {
+		for _, ind := range p.VertexIndices {
 			if ind < minIndex {
 				minIndex = ind
 			}
@@ -68,7 +68,7 @@ func (obj *Object) gatherParsedPrimitiveMetadata() string {
 				maxIndex = ind
 			}
 		}
-		numVerts := len(p.vertexIndices)
+		numVerts := len(p.VertexIndices)
 		if numVerts > maxVertices {
 			maxVertices = numVerts
 		}
@@ -87,7 +87,7 @@ func (p *Primitive) ToString(tabAmount int) string {
 	str += fmt.Sprintf(spaces+"  ColorPaletteIndex: %d,\n", p.ColorIndex)
 	str += fmt.Sprintf(spaces+"  IsColored: %v,\n", p.IsColored)
 	str += fmt.Sprintf(spaces+"  TextureName: \"%s\",\n", p.TextureName)
-	str += fmt.Sprintf(spaces+"  VertexIndices: %v,\n", p.vertexIndices)
+	str += fmt.Sprintf(spaces+"  VertexIndices: %v,\n", p.VertexIndices)
 	str += spaces + "}\n"
 	return str
 }
