@@ -18,7 +18,10 @@ func (mr *Reader) ReadFromFile(fileName string) {
 	stat, _ := file.Stat()
 	// Read the file into a byte slice
 	mr.fileBytes = make([]byte, stat.Size())
-	bufio.NewReader(file).Read(mr.fileBytes)
+	_, err := bufio.NewReader(file).Read(mr.fileBytes)
+	if err != nil {
+		panic(err)
+	}
 
 	// fill the reader
 }

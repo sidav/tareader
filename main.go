@@ -11,7 +11,7 @@ func main() {
 	r.ReadFromFile("armsy.3do")
 
 	obj := object3d.ReadObjectFromReader(r, 0)
-	fmt.Printf(obj.ToString(0))
+	fmt.Print(obj.ToString(0))
 }
 
 func pp(str string, args ...interface{}) {
