@@ -25,6 +25,16 @@ func (o *Object) ToString(tabAmount int) string {
 		result += prim.ToString(tabAmount + 4)
 	}
 	result += fmt.Sprintf(spaces + "  ]\n")
+
+	result += fmt.Sprintf(spaces + "  Selection primitive: ")
+	if o.SelectionPrimitive != nil {
+		result += "{\n"
+		result += o.SelectionPrimitive.ToString(tabAmount + 4)
+		result += fmt.Sprintf(spaces + "  }\n")
+	} else {
+		result += "NULL,\n"
+	}
+
 	result += spaces + "  " + o.gatherParsedPrimitiveMetadata()
 
 	if o.ChildObject != nil {

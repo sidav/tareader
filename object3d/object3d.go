@@ -21,11 +21,12 @@ type Object struct {
 	OffsetToChildObject        int
 
 	// the object data itself
-	ObjectName    string
-	Vertexes      []Vertex3d
-	Primitives    []*Primitive
-	ChildObject   *Object
-	SiblingObject *Object
+	ObjectName         string
+	Vertexes           []Vertex3d
+	Primitives         []*Primitive
+	SelectionPrimitive *Primitive
+	ChildObject        *Object
+	SiblingObject      *Object
 }
 
 func ReadObjectFromReader(r *binaryreader.Reader, modelOffset int) *Object {
@@ -48,6 +49,10 @@ func ReadObjectFromReader(r *binaryreader.Reader, modelOffset int) *Object {
 	obj.ObjectName = r.ReadNullTermStringFromBytesArray(0, obj.OffsetToObjectName)
 	obj.Vertexes = ReadVertexesFromReader(r, obj.OffsetToVertexArray, obj.NumberOfVertexes)
 	obj.Primitives = ReadPrimitivesArrayFromReader(r, obj.OffsetToPrimitiveArray, obj.NumberOfPrimitives)
+	if obj.OffsetToselectionPrimitive != -1 && len(obj.Primitives) > 0 {
+		// Bugged? Is it the index or is it really byte-offset?
+		obj.SelectionPrimitive = obj.Primitives[obj.OffsetToselectionPrimitive]
+	}
 
 	if obj.OffsetToChildObject != 0 {
 		obj.ChildObject = ReadObjectFromReader(r, obj.OffsetToChildObject)
