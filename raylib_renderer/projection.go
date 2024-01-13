@@ -13,3 +13,7 @@ package raylibrenderer
 func obliqueProjection(x, y, z float64) (osx, osy float64) {
 	return x, z - y/2
 }
+
+func obliqueProjectionInt32(x, y, z float64) (osx, osy int32) {
+	return int32(x), int32(-z - y/2)
+}

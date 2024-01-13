@@ -28,10 +28,6 @@ func GetWindowSize() (int32, int32) {
 	return windowW, windowH
 }
 
-func FillPoly() {
-
-}
-
 func Clear() {
 	rl.DrawRectangle(0, 0, windowW, windowH, rl.Black)
 }
