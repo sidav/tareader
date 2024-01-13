@@ -3,7 +3,7 @@ package raylibrenderer
 import (
 	"fmt"
 	"time"
-	"totala_reader/object3d"
+	"totala_reader/model"
 	"totala_reader/raylib_renderer/middleware"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -26,7 +26,7 @@ func (r *RaylibRenderer) Init() {
 	middleware.Flush()
 }
 
-func (r *RaylibRenderer) DrawModel(rootObject *object3d.Object) {
+func (r *RaylibRenderer) DrawModel(rootObject *model.Model) {
 	r.totalMessages = 0
 	middleware.Clear()
 	// middleware.Flush()
@@ -34,9 +34,9 @@ func (r *RaylibRenderer) DrawModel(rootObject *object3d.Object) {
 	r.drawObject(rootObject, 0, 0, 0)
 }
 
-func (r *RaylibRenderer) drawObject(obj *object3d.Object, parentOffsetX, parentOffsetY, parentOffsetZ float64) {
-	currentOffsetX, currentOffsetY, currentOffsetZ := object3d.FixedPointToFloat(obj.XFromParent)+parentOffsetX,
-		object3d.FixedPointToFloat(obj.YFromParent)+parentOffsetY, object3d.FixedPointToFloat(obj.ZFromParent)+parentOffsetZ
+func (r *RaylibRenderer) drawObject(obj *model.Model, parentOffsetX, parentOffsetY, parentOffsetZ float64) {
+	currentOffsetX, currentOffsetY, currentOffsetZ := obj.XFromParent+parentOffsetX,
+		obj.YFromParent+parentOffsetY, obj.ZFromParent+parentOffsetZ
 
 	for _, p := range obj.Primitives {
 		r.drawPrimitive(obj, p, currentOffsetX, currentOffsetY, currentOffsetZ)
@@ -61,10 +61,10 @@ func (r *RaylibRenderer) drawObject(obj *object3d.Object, parentOffsetX, parentO
 	}
 }
 
-func (r *RaylibRenderer) drawPrimitive(obj *object3d.Object, prim *object3d.Primitive, offsetX, offsetY, offsetZ float64) {
+func (r *RaylibRenderer) drawPrimitive(obj *model.Model, prim *model.ModelSurface, offsetX, offsetY, offsetZ float64) {
 	projectedCoords := make([][2]int32, len(prim.VertexIndices))
 	for i, vInd := range prim.VertexIndices {
-		vx, vy, vz := obj.Vertexes[vInd].ToFloats()
+		vx, vy, vz := obj.Vertices[vInd][0], obj.Vertices[vInd][1], obj.Vertices[vInd][2]
 		vx *= r.scaleFactor
 		vy *= r.scaleFactor
 		vz *= r.scaleFactor
@@ -86,10 +86,10 @@ func (r *RaylibRenderer) drawPrimitive(obj *object3d.Object, prim *object3d.Prim
 			color = rl.Green
 		}
 		rl.DrawLine(
-			int32(projectedCoords[i][0]),
-			int32(projectedCoords[i][1]),
-			int32(projectedCoords[(i+1)%len(projectedCoords)][0]),
-			int32(projectedCoords[(i+1)%len(projectedCoords)][1]),
+			projectedCoords[i][0],
+			projectedCoords[i][1],
+			projectedCoords[(i+1)%len(projectedCoords)][0],
+			projectedCoords[(i+1)%len(projectedCoords)][1],
 			color,
 		)
 	}

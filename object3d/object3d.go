@@ -16,6 +16,10 @@ type Object struct {
 	SiblingObject      *Object
 }
 
+func (o *Object) ParentOffsetAsFloats() (float64, float64, float64) {
+	return FixedPointToFloat(o.XFromParent), FixedPointToFloat(o.YFromParent), FixedPointToFloat(o.ZFromParent)
+}
+
 func ReadObjectFromReader(r *binaryreader.Reader, modelOffset int) *Object {
 	// metadata from the file descriptor
 	// VersionSignature := r.ReadIntFromBytesArray(modelOffset, 0)
