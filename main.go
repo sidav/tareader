@@ -30,10 +30,12 @@ func main() {
 	rend := raylibrenderer.RaylibRenderer{}
 	rend.Init()
 	for !rl.IsKeyDown(rl.KeyEscape) {
+		start := time.Now()
 		rend.DrawModel(model)
-		time.Sleep(3 * time.Second)
+		pp("Done in %v!", time.Since(start))
+		middleware.Flush()
+		time.Sleep(3 * time.Second / 100)
 		middleware.Clear()
-		pp("Done!")
 	}
 }
 

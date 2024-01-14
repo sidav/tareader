@@ -16,7 +16,7 @@ func InitMiddleware(windW, windH int32) {
 	windowW, windowH = windW, windH
 	rl.InitWindow(windowW, windowH, "Render this please")
 	rl.SetWindowState(rl.FlagWindowResizable)
-	rl.SetTargetFPS(5)
+	rl.SetTargetFPS(30)
 	rl.SetExitKey(rl.KeyEscape)
 
 	// scale := int32(4)
@@ -75,6 +75,10 @@ func SetColor(r, g, b uint8) {
 	//	B: b,
 	//	A: 255,
 	//}
+}
+
+func Hline(x1, x2, y int32) {
+	rl.DrawLine(x1, y, x2, y, currColor)
 }
 
 func DrawPoint(x, y int32) {
