@@ -16,6 +16,8 @@ type RaylibRenderer struct {
 	scaleFactor                float64
 	totalMessages              int32
 
+	frame int
+
 	zBuffer [1920][1080]float64
 
 	trianglesBatch []*triangle
@@ -46,6 +48,7 @@ func (r *RaylibRenderer) DrawModel(rootObject *model.Model) {
 	middleware.SetColor(getTaPaletteColor(4))
 	r.drawObject(rootObject, 0, 0, 0)
 	r.DrawTrianglesBatch()
+	r.frame++
 	// middleware.Flush()
 }
 
@@ -102,6 +105,7 @@ func (r *RaylibRenderer) drawPrimitive(obj *model.Model, prim *model.ModelSurfac
 				},
 			},
 		}
+		newTriangle.rotate(r.frame * 3)
 		newTriangle.calcMiddle()
 		r.trianglesBatch = append(r.trianglesBatch, newTriangle)
 	}
@@ -110,11 +114,9 @@ func (r *RaylibRenderer) drawPrimitive(obj *model.Model, prim *model.ModelSurfac
 func (r *RaylibRenderer) DrawTrianglesBatch() {
 	// first of all, sort the triangles
 	sort.Slice(r.trianglesBatch, func(x, y int) bool {
-		my1, mz1 := r.trianglesBatch[x].middleY, r.trianglesBatch[x].middleZ
-		my2, mz2 := r.trianglesBatch[y].middleY, r.trianglesBatch[y].middleZ
+		mz1 := r.trianglesBatch[x].middleZ
+		mz2 := r.trianglesBatch[y].middleZ
 		return mz2 < mz1
-		return (-mz1 - my1/2) < (-mz2 - my2/2)
-		// return r.trianglesBatch[x].coords[2][1] < r.trianglesBatch[y].coords[2][1]
 	})
 
 	// draw the sorted triangles
