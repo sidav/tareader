@@ -29,6 +29,12 @@ func main() {
 	defer rl.CloseWindow()
 	rend := raylibrenderer.RaylibRenderer{}
 	rend.Init()
+
+	rend.ShowPalette()
+	rend.ShowPalette()
+	middleware.Flush()
+	time.Sleep(3 * time.Second)
+
 	for !rl.IsKeyDown(rl.KeyEscape) {
 		start := time.Now()
 		rend.DrawModel(model)
