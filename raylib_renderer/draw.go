@@ -78,15 +78,15 @@ func (r *RaylibRenderer) HLineZBuf(x1, x2, y int32, white bool) {
 	}
 	zinc := (z2 - z1) / float64(x2-x1)
 	for x := x1; x <= x2; x++ {
+		if r.canDrawOverZBufferAt(x, y, z1) {
 
-		if x-x1 < boldth || x2-x < boldth || white {
-			middleware.SetColor(255, 255, 255)
-		} else {
-			middleware.SetColor(0, 0, 128)
-		}
+			if x-x1 < boldth || x2-x < boldth || white {
+				middleware.SetColor(255, 255, 255)
+			} else {
+				middleware.SetColor(0, 0, 128)
+			}
 
-		if r.zBuffer[x][y] < z1 {
-			r.zBuffer[x][y] = z1
+			r.setZBufferValueAt(z1, x, y)
 			middleware.DrawPoint(x, y)
 		}
 		z1 += zinc

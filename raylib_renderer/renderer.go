@@ -18,7 +18,8 @@ type RaylibRenderer struct {
 
 	frame int
 
-	zBuffer [1920][1080]float64
+	zBuffer        [1920][1080]float64
+	zBufferReverse bool
 
 	trianglesBatch []*triangle
 }
@@ -30,16 +31,17 @@ func (r *RaylibRenderer) Init() {
 	r.fontSize = 32
 	r.scaleFactor = 4.0
 	middleware.Clear()
-	middleware.Flush()
+	// middleware.Flush()
 }
 
 func (r *RaylibRenderer) DrawModel(rootObject *model.Model) {
 
-	for i := range r.zBuffer {
-		for j := range r.zBuffer[i] {
-			r.zBuffer[i][j] = -100000.0
-		}
-	}
+	// for i := range r.zBuffer {
+	// 	for j := range r.zBuffer[i] {
+	// 		r.zBuffer[i][j] = -100000.0
+	// 	}
+	// }
+	r.flipZBuffer()
 
 	r.trianglesBatch = nil
 	r.totalMessages = 0
