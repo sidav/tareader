@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 	"totala_reader/model"
 	raylibrenderer "totala_reader/raylib_renderer"
 	"totala_reader/raylib_renderer/middleware"
 	binaryreader "totala_reader/ta_files_read"
 	"totala_reader/ta_files_read/object3d"
+	"totala_reader/ta_files_read/texture"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -21,27 +23,34 @@ func main() {
 	r := &binaryreader.Reader{}
 	r.ReadFromFile(openedFile)
 
-	obj := object3d.ReadObjectFromReader(r, 0)
-	fmt.Printf("{\n%s}\n", obj.ToString(0))
+	if strings.Contains(openedFile, ".3do") {
 
-	model := model.NewModelFrom3doObject3d(obj)
-	middleware.InitMiddleware(1366, 768)
-	defer rl.CloseWindow()
-	rend := raylibrenderer.RaylibRenderer{}
-	rend.Init()
+		obj := object3d.ReadObjectFromReader(r, 0)
+		fmt.Printf("{\n%s}\n", obj.ToString(0))
 
-	// rend.ShowPalette()
-	// rend.ShowPalette()
-	// middleware.Flush()
-	// time.Sleep(3 * time.Second)
+		model := model.NewModelFrom3doObject3d(obj)
+		middleware.InitMiddleware(1366, 768)
+		defer rl.CloseWindow()
+		rend := raylibrenderer.RaylibRenderer{}
+		rend.Init()
 
-	for !rl.IsKeyDown(rl.KeyEscape) {
-		start := time.Now()
-		rend.DrawModel(model)
-		pp("Done in %v!", time.Since(start))
-		middleware.Flush()
-		time.Sleep(3 * time.Second / 100)
-		middleware.Clear()
+		// rend.ShowPalette()
+		// rend.ShowPalette()
+		// middleware.Flush()
+		// time.Sleep(3 * time.Second)
+
+		for !rl.IsKeyDown(rl.KeyEscape) {
+			start := time.Now()
+			rend.DrawModel(model)
+			pp("Done in %v!", time.Since(start))
+			middleware.Flush()
+			time.Sleep(3 * time.Second / 100)
+			middleware.Clear()
+		}
+	}
+	if strings.Contains(strings.ToLower(openedFile), ".gaf") {
+		fmt.Printf("Opening texture\n")
+		texture.ReadTextureFromReader(r)
 	}
 }
 

@@ -57,3 +57,14 @@ func (mr *Reader) ReadNullTermStringFromBytesArray(baseOffset, offset int) strin
 	}
 	panic("Null-terminated string longer than 256 bytes!")
 }
+
+func (mr *Reader) ReadFixedLengthStringFromBytesArray(baseOffset, offset, length int) string {
+	var buff bytes.Buffer
+	index := 0
+	for index < length {
+		byteHere := mr.fileBytes[baseOffset+offset+index]
+		buff.WriteByte(byteHere)
+		index++
+	}
+	return buff.String()
+}
