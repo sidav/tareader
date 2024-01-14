@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 	"time"
-	binaryreader "totala_reader/binary_reader"
 	"totala_reader/model"
-	"totala_reader/object3d"
 	raylibrenderer "totala_reader/raylib_renderer"
 	"totala_reader/raylib_renderer/middleware"
+	binaryreader "totala_reader/ta_files_read"
+	"totala_reader/ta_files_read/object3d"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )

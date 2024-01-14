@@ -1,4 +1,4 @@
-package binaryreader
+package tafilesread
 
 import (
 	"bufio"

@@ -1,7 +1,7 @@
 package object3d
 
 import (
-	binaryreader "totala_reader/binary_reader"
+	binaryreader "totala_reader/ta_files_read"
 )
 
 type Object struct {

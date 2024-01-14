@@ -1,6 +1,6 @@
 package model
 
-import "totala_reader/object3d"
+import "totala_reader/ta_files_read/object3d"
 
 // TODO: split into triangles?..
 type ModelSurface struct {
