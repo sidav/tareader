@@ -10,7 +10,6 @@ import (
 	"totala_reader/raylib_renderer/middleware"
 	binaryreader "totala_reader/ta_files_read"
 	"totala_reader/ta_files_read/object3d"
-	"totala_reader/ta_files_read/texture"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -51,11 +50,11 @@ func main() {
 	}
 	if strings.Contains(strings.ToLower(openedFile), ".gaf") {
 		fmt.Printf("Opening texture\n")
-		gafEntries := texture.ReadTextureFromReader(r)
+		gafEntries := readAllGAFsFromDirectory("game_files/files_gaf")
 		for _, ge := range gafEntries {
 			rend.DrawGafFrame(ge)
 			middleware.Flush()
-			time.Sleep(1 * time.Second)
+			// time.Sleep(1 * time.Second / 10)
 		}
 	}
 }
