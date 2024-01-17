@@ -38,7 +38,12 @@ func (mr *Reader) ReadUint16FromBytesArray(baseOffset, offset int) int {
 	// fmt.Printf("Reading UINT16 at 0x%X (%d+%d): ", baseOffset+offset, baseOffset, offset)
 	// fmt.Printf("Got %x\n", mr.fileBytes[baseOffset+offset:baseOffset+offset+2])
 	uint16Value := binary.LittleEndian.Uint16(mr.fileBytes[baseOffset+offset : baseOffset+offset+2])
-	return int(uint16Value)
+	int16Value := int16(uint16Value)
+	return int(int16Value)
+}
+
+func (mr *Reader) ReadByteFromBytesArray(baseOffset, offset int) byte {
+	return mr.fileBytes[baseOffset+offset]
 }
 
 func (mr *Reader) ReadNullTermStringFromBytesArray(baseOffset, offset int) string {
