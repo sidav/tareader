@@ -23,16 +23,17 @@ func main() {
 	r := &binaryreader.Reader{}
 	r.ReadFromFile(openedFile)
 
+	middleware.InitMiddleware(1366, 768)
+	defer rl.CloseWindow()
+	rend := raylibrenderer.RaylibRenderer{}
+	rend.Init()
+
 	if strings.Contains(openedFile, ".3do") {
 
 		obj := object3d.ReadObjectFromReader(r, 0)
 		fmt.Printf("{\n%s}\n", obj.ToString(0))
 
 		model := model.NewModelFrom3doObject3d(obj)
-		middleware.InitMiddleware(1366, 768)
-		defer rl.CloseWindow()
-		rend := raylibrenderer.RaylibRenderer{}
-		rend.Init()
 
 		// rend.ShowPalette()
 		// rend.ShowPalette()
@@ -50,7 +51,12 @@ func main() {
 	}
 	if strings.Contains(strings.ToLower(openedFile), ".gaf") {
 		fmt.Printf("Opening texture\n")
-		texture.ReadTextureFromReader(r)
+		gafEntries := texture.ReadTextureFromReader(r)
+		for _, ge := range gafEntries {
+			rend.DrawGafFrame(ge)
+			middleware.Flush()
+			time.Sleep(1 * time.Second)
+		}
 	}
 }
 
