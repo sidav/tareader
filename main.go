@@ -10,6 +10,7 @@ import (
 	"totala_reader/raylib_renderer/middleware"
 	binaryreader "totala_reader/ta_files_read"
 	"totala_reader/ta_files_read/object3d"
+	"totala_reader/ta_files_read/texture"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -27,12 +28,14 @@ func main() {
 	rend := raylibrenderer.RaylibRenderer{}
 	rend.Init()
 
+	textures := readAllGAFsFromDirectory("game_files/files_gaf")
+
 	if strings.Contains(openedFile, ".3do") {
 
 		obj := object3d.ReadObjectFromReader(r, 0)
 		fmt.Printf("{\n%s}\n", obj.ToString(0))
 
-		model := model.NewModelFrom3doObject3d(obj)
+		model := model.NewModelFrom3doObject3d(obj, textures)
 
 		// rend.ShowPalette()
 		// rend.ShowPalette()
@@ -50,11 +53,11 @@ func main() {
 	}
 	if strings.Contains(strings.ToLower(openedFile), ".gaf") {
 		fmt.Printf("Opening texture\n")
-		gafEntries := readAllGAFsFromDirectory("game_files/files_gaf")
+		gafEntries := texture.ReadTextureFromReader(r)
 		for _, ge := range gafEntries {
 			rend.DrawGafFrame(ge)
 			middleware.Flush()
-			// time.Sleep(1 * time.Second / 10)
+			time.Sleep(1 * time.Second / 10)
 		}
 	}
 }

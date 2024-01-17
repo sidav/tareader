@@ -68,6 +68,9 @@ func (mr *Reader) ReadFixedLengthStringFromBytesArray(baseOffset, offset, length
 	index := 0
 	for index < length {
 		byteHere := mr.fileBytes[baseOffset+offset+index]
+		if byteHere == 0 {
+			break
+		}
 		buff.WriteByte(byteHere)
 		index++
 	}
