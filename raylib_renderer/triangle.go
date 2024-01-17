@@ -9,7 +9,7 @@ type triangle struct {
 }
 
 func (t *triangle) rotate(degrees int) {
-	// only 2d for now
+	// only around Y for now
 	radians := float64(degrees) * math.Pi / 180
 	cos := math.Cos(radians)
 	sin := math.Sin(radians)

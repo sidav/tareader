@@ -29,7 +29,7 @@ func (r *RaylibRenderer) drawedge(x1, y1, x2, y2 int32, z1, z2 float64) {
 	}
 }
 
-func (r *RaylibRenderer) polygon(x1, y1, x2, y2, x3, y3 int32, z1, z2, z3 float64) {
+func (r *RaylibRenderer) drawFilledTriangle(x1, y1, x2, y2, x3, y3 int32, z1, z2, z3 float64) {
 
 	var minx, maxx int32
 	r.drawedge(x1, y1, x2, y2, z1, z2)
