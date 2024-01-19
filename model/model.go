@@ -33,6 +33,8 @@ func NewModelFrom3doObject3d(obj *object3d.Object, allTextures []*texture.GafEnt
 			model.SelectionPrimitive = newSurf
 		}
 	}
+	// Calculate UV-mapping
+	model.performUvMappingOnAllSurfaces()
 	if obj.ChildObject != nil {
 		model.ChildObject = NewModelFrom3doObject3d(obj.ChildObject, allTextures)
 	}

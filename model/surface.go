@@ -9,10 +9,11 @@ import (
 
 // TODO: split into triangles?..
 type ModelSurface struct {
-	VertexIndices []int
-	IsColored     bool
-	Color         int
-	Texture       *texture.GafEntry
+	VertexIndices         []int
+	UVCoordinatesPerIndex [][2]float64
+	IsColored             bool
+	Color                 int
+	Texture               *texture.GafEntry
 }
 
 func newModelSurfaceFrom3doPrimitive(p *object3d.Primitive, allTextures []*texture.GafEntry) *ModelSurface {

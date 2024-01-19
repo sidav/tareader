@@ -1,6 +1,9 @@
 package raylibrenderer
 
-import "math"
+import (
+	"math"
+	"totala_reader/geometry"
+)
 
 type triangle struct {
 	coords            [3][3]float64
@@ -11,12 +14,9 @@ type triangle struct {
 func (t *triangle) rotate(degrees int) {
 	// only around Y for now
 	radians := float64(degrees) * math.Pi / 180
-	cos := math.Cos(radians)
-	sin := math.Sin(radians)
 	for i := range t.coords {
-		temp := t.coords[i][0]
-		t.coords[i][0] = t.coords[i][0]*cos - t.coords[i][2]*sin
-		t.coords[i][2] = temp*sin + t.coords[i][2]*cos
+		t.coords[i][0], t.coords[i][1], t.coords[i][2] = geometry.Rotate3dCoordsAroundY(t.coords[i][0],
+			t.coords[i][1], t.coords[i][2], radians)
 	}
 }
 
