@@ -12,7 +12,7 @@ type ModelSurface struct {
 	VertexIndices         []int
 	UVCoordinatesPerIndex [][2]float64
 	IsColored             bool
-	Color                 int
+	Color                 byte // palette index
 	Texture               *texture.GafEntry
 }
 
@@ -23,7 +23,11 @@ func newModelSurfaceFrom3doPrimitive(p *object3d.Primitive, allTextures []*textu
 	// Assign color to this surface
 	if p.IsColored {
 		ms.IsColored = p.IsColored
-		ms.Color = p.ColorIndex
+		ms.Color = byte(p.ColorIndex)
+		if p.ColorIndex > 255 {
+			// TODO: check if this int as actually 4 color indices.
+			fmt.Printf("Warning: bad color index %d; transformed to %d\n", p.ColorIndex, ms.Color)
+		}
 	}
 	// Assign GAF texture to this surface
 	// if p.TextureName != "" && !p.IsColored {

@@ -11,7 +11,7 @@ type triangle struct {
 	texture           *texture.GafEntry
 	uvCoords          [3][2]float64
 	middleY, middleZ  float64
-	colorPaletteIndex int
+	colorPaletteIndex byte
 }
 
 func (t *triangle) rotate(degrees int) {

@@ -114,6 +114,8 @@ func (r *RaylibRenderer) drawPrimitive(obj *model.Model, prim *model.ModelSurfac
 				prim.UVCoordinatesPerIndex[i],
 			}
 			newTriangle.texture = prim.Texture
+		} else {
+			newTriangle.colorPaletteIndex = prim.Color
 		}
 		newTriangle.rotate(r.frame * 3)
 		newTriangle.calcMiddle()
@@ -148,6 +150,7 @@ func (r *RaylibRenderer) DrawTrianglesBatch() {
 				t.coords[0][1],
 				t.coords[1][1],
 				t.coords[2][1],
+				t.colorPaletteIndex,
 			)
 		} else {
 			r.drawTexturedTriangle(

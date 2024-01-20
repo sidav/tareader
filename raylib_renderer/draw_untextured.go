@@ -4,7 +4,7 @@ import (
 	"totala_reader/raylib_renderer/middleware"
 )
 
-const boldth = 2
+const boldth = 0
 
 var xedge [1080][2]float64
 var zpos [1080][2]float64
@@ -29,7 +29,7 @@ func (r *RaylibRenderer) drawedge(x1, y1, x2, y2 int32, z1, z2 float64) {
 	}
 }
 
-func (r *RaylibRenderer) drawFilledTriangle(x1, y1, x2, y2, x3, y3 int32, z1, z2, z3 float64) {
+func (r *RaylibRenderer) drawFilledTriangle(x1, y1, x2, y2, x3, y3 int32, z1, z2, z3 float64, color byte) {
 
 	var minx, maxx int32
 	r.drawedge(x1, y1, x2, y2, z1, z2)
@@ -65,11 +65,11 @@ func (r *RaylibRenderer) drawFilledTriangle(x1, y1, x2, y2, x3, y3 int32, z1, z2
 		maxx = x3
 	}
 	for y := miny; y <= maxy; y++ {
-		r.HLineZBuf(int32(xedge[y][0]), int32(xedge[y][1]), y, y-miny < boldth || maxy-y < boldth)
+		r.HLineZBuf(int32(xedge[y][0]), int32(xedge[y][1]), y, color, y-miny < boldth || maxy-y < boldth)
 	}
 }
 
-func (r *RaylibRenderer) HLineZBuf(x1, x2, y int32, white bool) {
+func (r *RaylibRenderer) HLineZBuf(x1, x2, y int32, color byte, white bool) {
 	z1 := zpos[y][0]
 	z2 := zpos[y][1]
 	if x1 > x2 {
@@ -83,7 +83,7 @@ func (r *RaylibRenderer) HLineZBuf(x1, x2, y int32, white bool) {
 			if x-x1 < boldth || x2-x < boldth || white {
 				middleware.SetColor(255, 255, 255)
 			} else {
-				middleware.SetColor(0, 0, 128)
+				middleware.SetColor(getTaPaletteColor(uint8(color)))
 			}
 
 			r.setZBufferValueAt(z1, x, y)
