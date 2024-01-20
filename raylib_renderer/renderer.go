@@ -2,6 +2,8 @@ package raylibrenderer
 
 import (
 	"fmt"
+	"math"
+	"sort"
 	"time"
 	"totala_reader/model"
 	"totala_reader/raylib_renderer/middleware"
@@ -14,6 +16,13 @@ type RaylibRenderer struct {
 	fontSize                   int32
 	scaleFactor                float64
 	totalMessages              int32
+
+	frame int
+
+	zBuffer        [1920][1080]float64
+	zBufferReverse bool
+
+	trianglesBatch []*triangle
 }
 
 func (r *RaylibRenderer) Init() {
@@ -23,15 +32,27 @@ func (r *RaylibRenderer) Init() {
 	r.fontSize = 32
 	r.scaleFactor = 5.0
 	middleware.Clear()
-	middleware.Flush()
+	// middleware.Flush()
 }
 
 func (r *RaylibRenderer) DrawModel(rootObject *model.Model) {
+
+	for i := range r.zBuffer {
+		for j := range r.zBuffer[i] {
+			r.zBuffer[i][j] = -math.MaxFloat64
+		}
+	}
+	// r.flipZBuffer()
+
+	r.trianglesBatch = nil
 	r.totalMessages = 0
 	middleware.Clear()
 	// middleware.Flush()
 	middleware.SetColor(getTaPaletteColor(4))
 	r.drawObject(rootObject, 0, 0, 0)
+	r.DrawTrianglesBatch()
+	r.frame++
+	// middleware.Flush()
 }
 
 func (r *RaylibRenderer) drawObject(obj *model.Model, parentOffsetX, parentOffsetY, parentOffsetZ float64) {
@@ -42,14 +63,16 @@ func (r *RaylibRenderer) drawObject(obj *model.Model, parentOffsetX, parentOffse
 		r.drawPrimitive(obj, p, currentOffsetX, currentOffsetY, currentOffsetZ)
 	}
 
-	rl.DrawText(fmt.Sprintf("OBJECT: %s\n", obj.ObjectName), 0, (r.fontSize+2)*r.totalMessages, r.fontSize, rl.White)
-	rl.DrawLine(0, r.totalMessages*(r.fontSize+2)+r.fontSize,
-		340, r.totalMessages*(r.fontSize+2)+r.fontSize, rl.Red)
-	rl.DrawLine(340, r.totalMessages*(r.fontSize+2)+r.fontSize,
-		int32(currentOffsetX*r.scaleFactor)+r.onScreenOffX, int32(currentOffsetZ*r.scaleFactor)+r.onScreenOffY, rl.Red)
-	r.totalMessages++
-	middleware.Flush()
-	time.Sleep(time.Second / 2)
+	if false {
+		rl.DrawText(fmt.Sprintf("OBJECT: %s\n", obj.ObjectName), 0, (r.fontSize+2)*r.totalMessages, r.fontSize, rl.White)
+		rl.DrawLine(0, r.totalMessages*(r.fontSize+2)+r.fontSize,
+			340, r.totalMessages*(r.fontSize+2)+r.fontSize, rl.Red)
+		rl.DrawLine(340, r.totalMessages*(r.fontSize+2)+r.fontSize,
+			int32(currentOffsetX*r.scaleFactor)+r.onScreenOffX, int32(currentOffsetZ*r.scaleFactor)+r.onScreenOffY, rl.Red)
+		r.totalMessages++
+		// middleware.Flush()
+		time.Sleep(time.Second)
+	}
 
 	if obj.ChildObject != nil && len(obj.ChildObject.Primitives) > 0 {
 		middleware.SetColor(getTaPaletteColor(5))
@@ -62,35 +85,108 @@ func (r *RaylibRenderer) drawObject(obj *model.Model, parentOffsetX, parentOffse
 }
 
 func (r *RaylibRenderer) drawPrimitive(obj *model.Model, prim *model.ModelSurface, offsetX, offsetY, offsetZ float64) {
-	projectedCoords := make([][2]int32, len(prim.VertexIndices))
-	for i, vInd := range prim.VertexIndices {
-		vx, vy, vz := obj.Vertices[vInd][0], obj.Vertices[vInd][1], obj.Vertices[vInd][2]
-		vx *= r.scaleFactor
-		vy *= r.scaleFactor
-		vz *= r.scaleFactor
-		vx += offsetX * r.scaleFactor
-		vy += offsetY * r.scaleFactor
-		vz += offsetZ * r.scaleFactor
-		projectedCoords[i][0], projectedCoords[i][1] = obliqueProjectionInt32(vx, vy, vz)
-
-		projectedCoords[i][0] += r.onScreenOffX
-		projectedCoords[i][1] += r.onScreenOffY
+	if len(prim.VertexIndices) < 3 || obj.SelectionPrimitive == prim {
+		return
 	}
-
-	if obj.SelectionPrimitive != prim {
-		middleware.FillPolygon(projectedCoords)
-	}
-	for i := range projectedCoords {
-		color := rl.White
-		if obj.SelectionPrimitive == prim {
-			color = rl.Green
+	// fill the triangles batch
+	zerox, zeroy, zeroz := (obj.Vertices[prim.VertexIndices[0]][0]+offsetX)*r.scaleFactor,
+		(obj.Vertices[prim.VertexIndices[0]][1]+offsetY)*r.scaleFactor,
+		(obj.Vertices[prim.VertexIndices[0]][2]+offsetZ)*r.scaleFactor
+	for i := 2; i < len(prim.VertexIndices); i++ {
+		newTriangle := &triangle{
+			coords: [3][3]float64{
+				{zerox, zeroy, zeroz},
+				{
+					(obj.Vertices[prim.VertexIndices[i-1]][0] + offsetX) * r.scaleFactor,
+					(obj.Vertices[prim.VertexIndices[i-1]][1] + offsetY) * r.scaleFactor,
+					(obj.Vertices[prim.VertexIndices[i-1]][2] + offsetZ) * r.scaleFactor,
+				},
+				{
+					(obj.Vertices[prim.VertexIndices[i]][0] + offsetX) * r.scaleFactor,
+					(obj.Vertices[prim.VertexIndices[i]][1] + offsetY) * r.scaleFactor,
+					(obj.Vertices[prim.VertexIndices[i]][2] + offsetZ) * r.scaleFactor,
+				},
+			},
 		}
-		rl.DrawLine(
-			projectedCoords[i][0],
-			projectedCoords[i][1],
-			projectedCoords[(i+1)%len(projectedCoords)][0],
-			projectedCoords[(i+1)%len(projectedCoords)][1],
-			color,
-		)
+		if len(prim.UVCoordinatesPerIndex) > 0 {
+			newTriangle.uvCoords = [3][2]float64{
+				prim.UVCoordinatesPerIndex[0],
+				prim.UVCoordinatesPerIndex[i-1],
+				prim.UVCoordinatesPerIndex[i],
+			}
+			newTriangle.texture = prim.Texture
+		} else {
+			newTriangle.colorPaletteIndex = prim.Color
+		}
+		newTriangle.rotate(r.frame * 3)
+		newTriangle.calcMiddle()
+		r.trianglesBatch = append(r.trianglesBatch, newTriangle)
+	}
+}
+
+func (r *RaylibRenderer) DrawTrianglesBatch() {
+	// first of all, sort the triangles
+	sort.Slice(r.trianglesBatch, func(x, y int) bool {
+		mz1 := r.trianglesBatch[x].middleZ
+		mz2 := r.trianglesBatch[y].middleZ
+		return mz2 < mz1
+	})
+
+	// draw the sorted triangles
+	var projX0, projY0, projX1, projY1, projX2, projY2 int32
+	for i, t := range r.trianglesBatch {
+		middleware.SetColor(getTaPaletteColor(uint8(i%3 + 3)))
+		// middleware.SetColor(getTaPaletteColor(4))
+		projX0, projY0 = obliqueProjectionInt32(t.coords[0][0], t.coords[0][1], t.coords[0][2])
+		projX1, projY1 = obliqueProjectionInt32(t.coords[1][0], t.coords[1][1], t.coords[1][2])
+		projX2, projY2 = obliqueProjectionInt32(t.coords[2][0], t.coords[2][1], t.coords[2][2])
+		if t.texture == nil {
+			r.drawFilledTriangle(
+				projX0+r.onScreenOffX,
+				projY0+r.onScreenOffY,
+				projX1+r.onScreenOffX,
+				projY1+r.onScreenOffY,
+				projX2+r.onScreenOffX,
+				projY2+r.onScreenOffY,
+				t.coords[0][1],
+				t.coords[1][1],
+				t.coords[2][1],
+				t.colorPaletteIndex,
+			)
+		} else {
+			r.drawTexturedTriangle(
+				projX0+r.onScreenOffX,
+				projY0+r.onScreenOffY,
+				projX1+r.onScreenOffX,
+				projY1+r.onScreenOffY,
+				projX2+r.onScreenOffX,
+				projY2+r.onScreenOffY,
+				t.coords[0][1],
+				t.coords[1][1],
+				t.coords[2][1],
+				t.uvCoords[0][0],
+				t.uvCoords[1][0],
+				t.uvCoords[2][0],
+				t.uvCoords[0][1],
+				t.uvCoords[1][1],
+				t.uvCoords[2][1],
+				t.texture,
+			)
+		}
+		// rl.DrawLine(projX0+r.onScreenOffX,
+		// 	projY0+r.onScreenOffY,
+		// 	projX1+r.onScreenOffX,
+		// 	projY1+r.onScreenOffY, rl.White)
+		// rl.DrawLine(projX0+r.onScreenOffX,
+		// 	projY0+r.onScreenOffY,
+		// 	projX2+r.onScreenOffX,
+		// 	projY2+r.onScreenOffY, rl.White)
+		// rl.DrawLine(projX2+r.onScreenOffX,
+		// 	projY2+r.onScreenOffY,
+		// 	projX1+r.onScreenOffX,
+		// 	projY1+r.onScreenOffY, rl.White)
+
+		// middleware.Flush()
+		// time.Sleep(10 * time.Millisecond / 10000)
 	}
 }
