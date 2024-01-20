@@ -126,11 +126,14 @@ func (r *RaylibRenderer) drawPrimitive(obj *model.Model, prim *model.ModelSurfac
 
 func (r *RaylibRenderer) DrawTrianglesBatch() {
 	// first of all, sort the triangles
-	sort.Slice(r.trianglesBatch, func(x, y int) bool {
-		mz1 := r.trianglesBatch[x].middleZ
-		mz2 := r.trianglesBatch[y].middleZ
-		return mz2 < mz1
-	})
+	// Disabled (unneeded?)
+	if false {
+		sort.Slice(r.trianglesBatch, func(x, y int) bool {
+			mz1 := r.trianglesBatch[x].middleZ
+			mz2 := r.trianglesBatch[y].middleZ
+			return mz2 < mz1
+		})
+	}
 
 	// draw the sorted triangles
 	var projX0, projY0, projX1, projY1, projX2, projY2 int32
