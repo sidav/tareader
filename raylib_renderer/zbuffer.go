@@ -3,6 +3,9 @@ package raylibrenderer
 import "math"
 
 func (r *RaylibRenderer) canDrawOverZBufferAt(x, y int32, depth float64) bool {
+	if x < 0 || x >= int32(len(r.zBuffer)) || y < 0 || y >= int32(len(r.zBuffer[0])) {
+		return false
+	}
 	return r.zBuffer[x][y] < depth
 }
 
