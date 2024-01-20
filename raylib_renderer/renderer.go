@@ -107,6 +107,14 @@ func (r *RaylibRenderer) drawPrimitive(obj *model.Model, prim *model.ModelSurfac
 				},
 			},
 		}
+		if len(prim.UVCoordinatesPerIndex) > 0 {
+			newTriangle.uvCoords = [3][2]float64{
+				prim.UVCoordinatesPerIndex[0],
+				prim.UVCoordinatesPerIndex[i-1],
+				prim.UVCoordinatesPerIndex[i],
+			}
+			newTriangle.texture = prim.Texture
+		}
 		newTriangle.rotate(r.frame * 3)
 		newTriangle.calcMiddle()
 		r.trianglesBatch = append(r.trianglesBatch, newTriangle)
@@ -129,17 +137,38 @@ func (r *RaylibRenderer) DrawTrianglesBatch() {
 		projX0, projY0 = obliqueProjectionInt32(t.coords[0][0], t.coords[0][1], t.coords[0][2])
 		projX1, projY1 = obliqueProjectionInt32(t.coords[1][0], t.coords[1][1], t.coords[1][2])
 		projX2, projY2 = obliqueProjectionInt32(t.coords[2][0], t.coords[2][1], t.coords[2][2])
-		r.drawFilledTriangle(
-			projX0+r.onScreenOffX,
-			projY0+r.onScreenOffY,
-			projX1+r.onScreenOffX,
-			projY1+r.onScreenOffY,
-			projX2+r.onScreenOffX,
-			projY2+r.onScreenOffY,
-			t.coords[0][1],
-			t.coords[1][1],
-			t.coords[2][1],
-		)
+		if t.texture == nil {
+			r.drawFilledTriangle(
+				projX0+r.onScreenOffX,
+				projY0+r.onScreenOffY,
+				projX1+r.onScreenOffX,
+				projY1+r.onScreenOffY,
+				projX2+r.onScreenOffX,
+				projY2+r.onScreenOffY,
+				t.coords[0][1],
+				t.coords[1][1],
+				t.coords[2][1],
+			)
+		} else {
+			r.drawTexturedTriangle(
+				projX0+r.onScreenOffX,
+				projY0+r.onScreenOffY,
+				projX1+r.onScreenOffX,
+				projY1+r.onScreenOffY,
+				projX2+r.onScreenOffX,
+				projY2+r.onScreenOffY,
+				t.coords[0][1],
+				t.coords[1][1],
+				t.coords[2][1],
+				t.uvCoords[0][0],
+				t.uvCoords[0][1],
+				t.uvCoords[1][0],
+				t.uvCoords[1][1],
+				t.uvCoords[2][0],
+				t.uvCoords[2][1],
+				t.texture,
+			)
+		}
 		// rl.DrawLine(projX0+r.onScreenOffX,
 		// 	projY0+r.onScreenOffY,
 		// 	projX1+r.onScreenOffX,

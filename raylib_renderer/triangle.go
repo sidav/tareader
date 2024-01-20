@@ -3,10 +3,13 @@ package raylibrenderer
 import (
 	"math"
 	"totala_reader/geometry"
+	"totala_reader/ta_files_read/texture"
 )
 
 type triangle struct {
 	coords            [3][3]float64
+	texture           *texture.GafEntry
+	uvCoords          [3][2]float64
 	middleY, middleZ  float64
 	colorPaletteIndex int
 }
