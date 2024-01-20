@@ -2,7 +2,6 @@ package raylibrenderer
 
 import (
 	"fmt"
-	"math"
 	"sort"
 	"time"
 	"totala_reader/model"
@@ -19,8 +18,8 @@ type RaylibRenderer struct {
 
 	frame int
 
-	zBuffer        [1920][1080]float64
-	zBufferReverse bool
+	zBuffer                                [1920][1080]float64
+	zBufMinX, zBufMaxX, zBufMinY, zBufMaxY int32 // for clearing changed area of the buffer only
 
 	trianglesBatch []*triangle
 }
@@ -32,17 +31,13 @@ func (r *RaylibRenderer) Init() {
 	r.fontSize = 32
 	r.scaleFactor = 5.0
 	middleware.Clear()
+	r.initZBuffer()
 	// middleware.Flush()
 }
 
 func (r *RaylibRenderer) DrawModel(rootObject *model.Model) {
 
-	for i := range r.zBuffer {
-		for j := range r.zBuffer[i] {
-			r.zBuffer[i][j] = -math.MaxFloat64
-		}
-	}
-	// r.flipZBuffer()
+	r.clearZBuffer()
 
 	r.trianglesBatch = nil
 	r.totalMessages = 0
