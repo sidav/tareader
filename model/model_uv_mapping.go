@@ -2,13 +2,14 @@ package model
 
 import (
 	"fmt"
+	"math"
 	"totala_reader/geometry"
 )
 
 func (m *Model) performUvMappingOnAllSurfaces() {
 	for _, prim := range m.Primitives {
 		// UV-mapping for colored (= non-textured) primitives and for non-3d objects is not requred.
-		if len(prim.VertexIndices) > 2 && !prim.IsColored && prim != m.SelectionPrimitive {
+		if prim.Texture != nil {
 			m.uvMapSurface(prim)
 		}
 	}
@@ -53,5 +54,36 @@ func (m *Model) uvMapSurface(prim *ModelSurface) {
 		}
 	}
 	fmt.Printf("UV         : %.2v\n", uv)
+
+	// Normalize UV coords (transform them to range [0.0 - 1.0])
+	minU, minV := math.MaxFloat64, math.MaxFloat64
+	for i := range uv {
+		if uv[i][0] < minU {
+			minU = uv[i][0]
+		}
+		if uv[i][1] < minV {
+			minV = uv[i][1]
+		}
+	}
+	for i := range uv {
+		uv[i][0] -= minU
+		uv[i][1] -= minV
+	}
+
+	maxU, maxV := 0.0, 0.0
+	for i := range uv {
+		if uv[i][0] > maxU {
+			maxU = uv[i][0]
+		}
+		if uv[i][1] > maxV {
+			maxV = uv[i][1]
+		}
+	}
+	for i := range uv {
+		uv[i][0] /= maxU
+		uv[i][1] /= maxV
+	}
+	fmt.Printf("UV normalzd: %.2v\n", uv)
+
 	prim.UVCoordinatesPerIndex = uv
 }

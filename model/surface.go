@@ -26,7 +26,8 @@ func newModelSurfaceFrom3doPrimitive(p *object3d.Primitive, allTextures []*textu
 		ms.Color = p.ColorIndex
 	}
 	// Assign GAF texture to this surface
-	if p.TextureName != "" && !p.IsColored {
+	// if p.TextureName != "" && !p.IsColored {
+	if len(p.TextureName) > 1 {
 		for _, tex := range allTextures {
 			if strings.ToLower(tex.Name) == strings.ToLower(p.TextureName) {
 				ms.Texture = tex
