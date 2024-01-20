@@ -165,10 +165,10 @@ func (r *RaylibRenderer) DrawTrianglesBatch() {
 				t.coords[1][1],
 				t.coords[2][1],
 				t.uvCoords[0][0],
-				t.uvCoords[0][1],
 				t.uvCoords[1][0],
-				t.uvCoords[1][1],
 				t.uvCoords[2][0],
+				t.uvCoords[0][1],
+				t.uvCoords[1][1],
 				t.uvCoords[2][1],
 				t.texture,
 			)
