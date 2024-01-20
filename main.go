@@ -41,13 +41,19 @@ func main() {
 		// rend.ShowPalette()
 		// middleware.Flush()
 		// time.Sleep(3 * time.Second)
+		var totalDuration time.Duration
+		totalFrames := 0
 
 		for !rl.IsKeyDown(rl.KeyEscape) {
 			start := time.Now()
 			rend.DrawModel(model)
-			pp("Done in %v!", time.Since(start))
+			totalDuration += time.Since(start)
+			totalFrames++
+			pp("Total frames %d; current done in %v (mean %v ~> %d FPS)",
+				totalFrames, time.Since(start),
+				totalDuration/time.Duration(totalFrames), int(time.Second/(totalDuration/time.Duration(totalFrames))))
 			middleware.Flush()
-			time.Sleep(3 * time.Second / 100)
+			time.Sleep(time.Microsecond)
 			middleware.Clear()
 		}
 	}
