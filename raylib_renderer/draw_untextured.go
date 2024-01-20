@@ -22,9 +22,11 @@ func (r *RaylibRenderer) drawedge(x1, y1, x2, y2 int32, z1, z2 float64) {
 	currX := float64(x1)
 	currZ := float64(z1)
 	for y := y1; y <= y2; y++ {
-		xedge[y][side] = currX
+		if y >= 0 && y < int32(len(xedge)) {
+			xedge[y][side] = currX
+			zpos[y][side] = currZ
+		}
 		currX += xslope
-		zpos[y][side] = currZ
 		currZ += zslope
 	}
 }
@@ -41,6 +43,9 @@ func (r *RaylibRenderer) drawFilledTriangle(x1, y1, x2, y2, x3, y3 int32, z1, z2
 	}
 	if miny > y3 {
 		miny = y3
+	}
+	if miny < 0 {
+		miny = 0
 	}
 
 	maxy := y1

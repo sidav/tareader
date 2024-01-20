@@ -29,13 +29,15 @@ func (r *RaylibRenderer) drawEdgeTextured(x1, y1, x2, y2 int32, z1, z2, u1, u2, 
 	currU := u1
 	currV := v1
 	for y := y1; y <= y2; y++ {
-		xedge[y][side] = currX
+		if y >= 0 && y < int32(len(xedge)) {
+			xedge[y][side] = currX
+			zpos[y][side] = currZ
+			uedge[y][side] = currU
+			vedge[y][side] = currV
+		}
 		currX += xslope
-		zpos[y][side] = currZ
 		currZ += zslope
-		uedge[y][side] = currU
 		currU += uslope
-		vedge[y][side] = currV
 		currV += vslope
 	}
 }
@@ -51,6 +53,9 @@ func (r *RaylibRenderer) drawTexturedTriangle(x1, y1, x2, y2, x3, y3 int32, z1, 
 	}
 	if miny > y3 {
 		miny = y3
+	}
+	if miny < 0 {
+		miny = 0
 	}
 
 	maxy := y1

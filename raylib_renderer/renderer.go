@@ -2,6 +2,7 @@ package raylibrenderer
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"time"
 	"totala_reader/model"
@@ -29,19 +30,19 @@ func (r *RaylibRenderer) Init() {
 	r.onScreenOffX /= 2
 	r.onScreenOffY /= 2
 	r.fontSize = 32
-	r.scaleFactor = 4.0
+	r.scaleFactor = 5.0
 	middleware.Clear()
 	// middleware.Flush()
 }
 
 func (r *RaylibRenderer) DrawModel(rootObject *model.Model) {
 
-	// for i := range r.zBuffer {
-	// 	for j := range r.zBuffer[i] {
-	// 		r.zBuffer[i][j] = -100000.0
-	// 	}
-	// }
-	r.flipZBuffer()
+	for i := range r.zBuffer {
+		for j := range r.zBuffer[i] {
+			r.zBuffer[i][j] = -math.MaxFloat64
+		}
+	}
+	// r.flipZBuffer()
 
 	r.trianglesBatch = nil
 	r.totalMessages = 0
