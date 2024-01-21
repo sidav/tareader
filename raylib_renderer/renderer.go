@@ -1,16 +1,13 @@
 package raylibrenderer
 
 import (
-	"fmt"
 	"sort"
-	"time"
+	graphicadapter "totala_reader/graphic_adapter"
 	"totala_reader/model"
-	"totala_reader/raylib_renderer/middleware"
-
-	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type RaylibRenderer struct {
+	gAdapter                   graphicadapter.GraphicBackend
 	onScreenOffX, onScreenOffY int32
 	fontSize                   int32
 	scaleFactor                float64
@@ -18,21 +15,20 @@ type RaylibRenderer struct {
 
 	frame int
 
-	zBuffer                                [1920][1080]float64
+	zBuffer                                [][]float64
 	zBufMinX, zBufMaxX, zBufMinY, zBufMaxY int32 // for clearing changed area of the buffer only
 
 	trianglesBatch []*triangle
 }
 
-func (r *RaylibRenderer) Init() {
-	r.onScreenOffX, r.onScreenOffY = middleware.GetWindowSize()
+func (r *RaylibRenderer) Init(adapter graphicadapter.GraphicBackend) {
+	r.gAdapter = adapter
+	r.onScreenOffX, r.onScreenOffY = r.gAdapter.GetRenderResolution()
 	r.onScreenOffX /= 2
 	r.onScreenOffY /= 2
-	r.fontSize = 32
-	r.scaleFactor = 5.0
-	middleware.Clear()
+	r.scaleFactor = 3.0
+	r.gAdapter.Clear()
 	r.initZBuffer()
-	// middleware.Flush()
 }
 
 func (r *RaylibRenderer) DrawModel(rootObject *model.Model) {
@@ -41,13 +37,10 @@ func (r *RaylibRenderer) DrawModel(rootObject *model.Model) {
 
 	r.trianglesBatch = nil
 	r.totalMessages = 0
-	middleware.Clear()
-	// middleware.Flush()
-	middleware.SetColor(getTaPaletteColor(4))
+	r.gAdapter.Clear()
 	r.drawObject(rootObject, 0, 0, 0)
 	r.DrawTrianglesBatch()
 	r.frame++
-	// middleware.Flush()
 }
 
 func (r *RaylibRenderer) drawObject(obj *model.Model, parentOffsetX, parentOffsetY, parentOffsetZ float64) {
@@ -58,23 +51,10 @@ func (r *RaylibRenderer) drawObject(obj *model.Model, parentOffsetX, parentOffse
 		r.drawPrimitive(obj, p, currentOffsetX, currentOffsetY, currentOffsetZ)
 	}
 
-	if false {
-		rl.DrawText(fmt.Sprintf("OBJECT: %s\n", obj.ObjectName), 0, (r.fontSize+2)*r.totalMessages, r.fontSize, rl.White)
-		rl.DrawLine(0, r.totalMessages*(r.fontSize+2)+r.fontSize,
-			340, r.totalMessages*(r.fontSize+2)+r.fontSize, rl.Red)
-		rl.DrawLine(340, r.totalMessages*(r.fontSize+2)+r.fontSize,
-			int32(currentOffsetX*r.scaleFactor)+r.onScreenOffX, int32(currentOffsetZ*r.scaleFactor)+r.onScreenOffY, rl.Red)
-		r.totalMessages++
-		// middleware.Flush()
-		time.Sleep(time.Second)
-	}
-
 	if obj.ChildObject != nil && len(obj.ChildObject.Primitives) > 0 {
-		middleware.SetColor(getTaPaletteColor(5))
 		r.drawObject(obj.ChildObject, currentOffsetX, currentOffsetY, currentOffsetZ)
 	}
 	if obj.SiblingObject != nil && len(obj.SiblingObject.Primitives) > 0 {
-		middleware.SetColor(getTaPaletteColor(4))
 		r.drawObject(obj.SiblingObject, parentOffsetX, parentOffsetY, parentOffsetZ)
 	}
 }
@@ -113,7 +93,7 @@ func (r *RaylibRenderer) drawPrimitive(obj *model.Model, prim *model.ModelSurfac
 		} else {
 			newTriangle.colorPaletteIndex = prim.Color
 		}
-		newTriangle.rotate(r.frame * 3)
+		newTriangle.rotate(r.frame)
 		newTriangle.calcMiddle()
 		r.trianglesBatch = append(r.trianglesBatch, newTriangle)
 	}
@@ -132,9 +112,7 @@ func (r *RaylibRenderer) DrawTrianglesBatch() {
 
 	// draw the sorted triangles
 	var projX0, projY0, projX1, projY1, projX2, projY2 int32
-	for i, t := range r.trianglesBatch {
-		middleware.SetColor(getTaPaletteColor(uint8(i%3 + 3)))
-		// middleware.SetColor(getTaPaletteColor(4))
+	for _, t := range r.trianglesBatch {
 		projX0, projY0 = obliqueProjectionInt32(t.coords[0][0], t.coords[0][1], t.coords[0][2])
 		projX1, projY1 = obliqueProjectionInt32(t.coords[1][0], t.coords[1][1], t.coords[1][2])
 		projX2, projY2 = obliqueProjectionInt32(t.coords[2][0], t.coords[2][1], t.coords[2][2])
@@ -171,20 +149,5 @@ func (r *RaylibRenderer) DrawTrianglesBatch() {
 				t.texture,
 			)
 		}
-		// rl.DrawLine(projX0+r.onScreenOffX,
-		// 	projY0+r.onScreenOffY,
-		// 	projX1+r.onScreenOffX,
-		// 	projY1+r.onScreenOffY, rl.White)
-		// rl.DrawLine(projX0+r.onScreenOffX,
-		// 	projY0+r.onScreenOffY,
-		// 	projX2+r.onScreenOffX,
-		// 	projY2+r.onScreenOffY, rl.White)
-		// rl.DrawLine(projX2+r.onScreenOffX,
-		// 	projY2+r.onScreenOffY,
-		// 	projX1+r.onScreenOffX,
-		// 	projY1+r.onScreenOffY, rl.White)
-
-		// middleware.Flush()
-		// time.Sleep(10 * time.Millisecond / 10000)
 	}
 }

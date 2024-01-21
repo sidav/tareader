@@ -2,7 +2,6 @@ package raylibrenderer
 
 import (
 	"math"
-	"totala_reader/raylib_renderer/middleware"
 	"totala_reader/ta_files_read/texture"
 )
 
@@ -106,9 +105,9 @@ func (r *RaylibRenderer) HLineTexturedZBuf(x1, x2, y int32, texture *texture.Gaf
 			texW, texH := len(texture.Frames[0].Pixels), len(texture.Frames[0].Pixels[0])
 			uCoord := int(math.Abs(math.Round(float64(texW)*u1))) % texW
 			vCoord := int(math.Abs(math.Round(float64(texH)*v1))) % texH
-			middleware.SetColor(getTaPaletteColor(texture.Frames[0].Pixels[uCoord][vCoord]))
+			r.gAdapter.SetColor(getTaPaletteColor(texture.Frames[0].Pixels[uCoord][vCoord]))
 			r.setZBufferValueAt(z1, x, y)
-			middleware.DrawPoint(x, y)
+			r.gAdapter.DrawPoint(x, y)
 		}
 		z1 += zinc
 		u1 += uinc

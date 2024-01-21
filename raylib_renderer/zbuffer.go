@@ -26,6 +26,11 @@ func (r *RaylibRenderer) setZBufferValueAt(val float64, x, y int32) {
 }
 
 func (r *RaylibRenderer) initZBuffer() {
+	w, h := r.gAdapter.GetRenderResolution()
+	r.zBuffer = make([][]float64, w)
+	for i := range r.zBuffer {
+		r.zBuffer[i] = make([]float64, h)
+	}
 	r.zBufMinX, r.zBufMaxX = int32(len(r.zBuffer)), 0
 	r.zBufMinY, r.zBufMaxY = int32(len(r.zBuffer[0])), 0
 	for i := range r.zBuffer {
