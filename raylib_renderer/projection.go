@@ -1,5 +1,7 @@
 package raylibrenderer
 
+import "math"
+
 // The camera in TA works by these coordinates (looked at upside down):
 // +------------> X
 // |
@@ -15,5 +17,5 @@ func obliqueProjection(x, y, z float64) (osx, osy float64) {
 }
 
 func obliqueProjectionInt32(x, y, z float64) (osx, osy int32) {
-	return int32(x), int32(-z - y/2)
+	return int32(math.Round(x)), int32(math.Round(-z - y/2))
 }

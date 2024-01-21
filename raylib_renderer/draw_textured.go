@@ -6,6 +6,9 @@ import (
 	"totala_reader/ta_files_read/texture"
 )
 
+var xedge [1080][2]float64
+var zpos [1080][2]float64
+
 // For textures U is X, and V is Y.
 var uedge [1080][2]float64
 var vedge [1080][2]float64
