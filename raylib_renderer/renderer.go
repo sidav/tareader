@@ -25,8 +25,8 @@ func (r *RaylibRenderer) Init(adapter graphicadapter.GraphicBackend) {
 	r.gAdapter = adapter
 	r.onScreenOffX, r.onScreenOffY = r.gAdapter.GetRenderResolution()
 	r.onScreenOffX /= 2
-	r.onScreenOffY /= 2
-	r.scaleFactor = 3.0
+	r.onScreenOffY = 55 * r.onScreenOffY / 100
+	r.scaleFactor = 4
 	r.gAdapter.Clear()
 	r.initZBuffer()
 }

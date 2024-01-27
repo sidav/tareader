@@ -24,8 +24,9 @@ func main() {
 	r.ReadFromFile(openedFile)
 
 	gAdapter := &graphicadapter.RaylibBackend{}
+	var scale int32 = 1
 	gAdapter.Init(1366, 768)
-	gAdapter.SetInternalResolution(1366/2, 768/2)
+	gAdapter.SetInternalResolution(1366/scale, 768/scale)
 	rend := raylibrenderer.RaylibRenderer{}
 	rend.Init(gAdapter)
 
@@ -59,7 +60,7 @@ func main() {
 				totalFrames, time.Since(start),
 				totalDuration/time.Duration(totalFrames), int(time.Second/(totalDuration/time.Duration(totalFrames))))
 			gAdapter.Flush()
-			time.Sleep(time.Microsecond)
+			// time.Sleep(time.Microsecond)
 			// gAdapter.Clear()
 		}
 	}

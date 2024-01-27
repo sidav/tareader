@@ -16,7 +16,7 @@ type RaylibBackend struct {
 func (rb *RaylibBackend) Init(w, h int32) {
 	rl.InitWindow(w, h, "RENDERER")
 	rb.realW, rb.realH = w, h
-	rl.SetWindowState(rl.FlagWindowResizable + rl.FlagWindowMaximized)
+	rl.SetWindowState(rl.FlagWindowResizable)
 	rl.SetTargetFPS(60)
 	rl.SetExitKey(rl.KeyEscape)
 }
@@ -36,8 +36,7 @@ func (rb *RaylibBackend) GetRenderResolution() (int32, int32) {
 }
 
 func (rb *RaylibBackend) Clear() {
-	rb.SetColor(0, 0, 0)
-	rb.FillRect(0, 0, int(rb.renderW), int(rb.renderH))
+	rl.ClearBackground(rl.Black)
 }
 
 func (rb *RaylibBackend) BeginFrame() {
