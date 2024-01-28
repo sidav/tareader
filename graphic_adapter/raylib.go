@@ -9,6 +9,7 @@ import (
 type RaylibBackend struct {
 	currColor        color.RGBA
 	TargetTexture    rl.RenderTexture2D
+	frameBuffer      []color.RGBA
 	realW, realH     int32
 	renderW, renderH int32
 }
@@ -23,6 +24,7 @@ func (rb *RaylibBackend) Init(w, h int32) {
 
 func (rb *RaylibBackend) SetInternalResolution(w, h int32) {
 	rb.TargetTexture = rl.LoadRenderTexture(w, h)
+	rb.frameBuffer = make([]color.RGBA, w*h)
 	rb.renderW, rb.renderH = w, h
 	rl.SetTextureFilter(rb.TargetTexture.Texture, rl.FilterAnisotropic16x)
 }
@@ -36,24 +38,31 @@ func (rb *RaylibBackend) GetRenderResolution() (int32, int32) {
 }
 
 func (rb *RaylibBackend) Clear() {
-	rl.ClearBackground(rl.Black)
+	// rl.ClearBackground(rl.Black)
+	black := color.RGBA{0, 0, 0, 255}
+	for i := range rb.frameBuffer {
+		rb.frameBuffer[i] = black
+	}
 }
 
 func (rb *RaylibBackend) BeginFrame() {
+	// TODO: remove
 	rl.BeginTextureMode(rb.TargetTexture)
 }
 
 func (rb *RaylibBackend) EndFrame() {
+	// TODO: remove
 	rl.EndTextureMode()
 }
 
 func (rb *RaylibBackend) Flush() {
+	rl.UpdateTexture(rb.TargetTexture.Texture, rb.frameBuffer)
 	rl.BeginDrawing()
 	rl.DrawTexturePro(rb.TargetTexture.Texture, rl.Rectangle{
 		X:      0,
 		Y:      float32(rb.TargetTexture.Texture.Height),
 		Width:  float32(rb.TargetTexture.Texture.Width),
-		Height: float32(-rb.TargetTexture.Texture.Height),
+		Height: float32(rb.TargetTexture.Texture.Height),
 	},
 		rl.Rectangle{
 			X:      0,
@@ -84,7 +93,16 @@ func (rb *RaylibBackend) SetColor(r, g, b uint8) {
 }
 
 func (rb *RaylibBackend) DrawPoint(x, y int32) {
-	rl.DrawPixel(x, y, rb.currColor)
+	coord := x + y*rb.renderW
+	if coord < rb.renderW*rb.renderH {
+		rb.frameBuffer[coord] = rb.currColor
+	}
+}
+
+func (rb *RaylibBackend) DrawText(text string, x, y int32) {
+	// TODO: implement
+	panic("Not implemented")
+	//rl.ImageDrawText()
 }
 
 func (rb *RaylibBackend) FillRect(x, y, w, h int) {

@@ -39,7 +39,7 @@ func main() {
 
 		model := model.NewModelFrom3doObject3d(obj, textures)
 
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 3; i++ {
 			gAdapter.BeginFrame()
 			gAdapter.Clear()
 			rend.ShowPalette()
@@ -70,9 +70,11 @@ func main() {
 		fmt.Printf("Opening texture\n")
 		gafEntries := texture.ReadTextureFromReader(r)
 		for _, ge := range gafEntries {
+			gAdapter.Clear()
 			rend.DrawGafFrame(ge)
 			gAdapter.Flush()
-			time.Sleep(1 * time.Second / 10)
+			fmt.Printf("%s\n", ge.Name)
+			time.Sleep(1 * time.Second / 2)
 		}
 	}
 }
