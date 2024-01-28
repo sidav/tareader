@@ -41,6 +41,7 @@ func main() {
 
 		for i := 0; i < 10; i++ {
 			gAdapter.BeginFrame()
+			gAdapter.Clear()
 			rend.ShowPalette()
 			gAdapter.EndFrame()
 			gAdapter.Flush()
@@ -54,10 +55,11 @@ func main() {
 			gAdapter.BeginFrame()
 			rend.DrawModel(model)
 			gAdapter.EndFrame()
-			totalDuration += time.Since(start)
 			totalFrames++
-			pp("Total frames %d; current done in %v (mean %v ~> %d FPS)",
-				totalFrames, time.Since(start),
+			timeSince := time.Since(start)
+			totalDuration += timeSince
+			pp("Total frames %d; current done in %v ~> %d FPS (mean %v ~> %d FPS)",
+				totalFrames, timeSince, int(time.Second/timeSince),
 				totalDuration/time.Duration(totalFrames), int(time.Second/(totalDuration/time.Duration(totalFrames))))
 			gAdapter.Flush()
 			// time.Sleep(time.Microsecond)
