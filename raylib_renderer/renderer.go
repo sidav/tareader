@@ -19,6 +19,8 @@ type RaylibRenderer struct {
 	zBufMinX, zBufMaxX, zBufMinY, zBufMaxY int32 // for clearing changed area of the buffer only
 
 	trianglesBatch []*triangle
+
+	debugMode bool
 }
 
 func (r *RaylibRenderer) Init(adapter graphicadapter.GraphicBackend) {
