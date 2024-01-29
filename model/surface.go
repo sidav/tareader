@@ -11,6 +11,8 @@ import (
 type ModelSurface struct {
 	VertexIndices         []int
 	UVCoordinatesPerIndex [][2]float64
+	CenterCoords          [3]float64
+	CenterUVCoords        [2]float64
 	IsColored             bool
 	Color                 byte // palette index
 	Texture               *texture.GafEntry

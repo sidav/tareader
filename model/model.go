@@ -33,6 +33,8 @@ func NewModelFrom3doObject3d(obj *object3d.Object, allTextures []*texture.GafEnt
 			model.SelectionPrimitive = newSurf
 		}
 	}
+	// Calculate and store centers for all surfaces
+	model.calcCenterOfAllSurfaces()
 	// Calculate UV-mapping
 	model.performUvMappingOnAllSurfaces()
 	if obj.ChildObject != nil {
@@ -42,4 +44,17 @@ func NewModelFrom3doObject3d(obj *object3d.Object, allTextures []*texture.GafEnt
 		model.SiblingObject = NewModelFrom3doObject3d(obj.SiblingObject, allTextures)
 	}
 	return model
+}
+
+func (m *Model) calcCenterOfAllSurfaces() {
+	for _, surf := range m.Primitives {
+		for _, index := range surf.VertexIndices {
+			surf.CenterCoords[0] += m.Vertices[index][0]
+			surf.CenterCoords[1] += m.Vertices[index][1]
+			surf.CenterCoords[2] += m.Vertices[index][2]
+		}
+		for i := range surf.CenterCoords {
+			surf.CenterCoords[i] /= float64(len(surf.VertexIndices))
+		}
+	}
 }

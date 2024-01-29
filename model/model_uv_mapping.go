@@ -11,6 +11,7 @@ func (m *Model) performUvMappingOnAllSurfaces() {
 		// UV-mapping for colored (= non-textured) primitives and for non-3d objects is not requred.
 		if prim.Texture != nil {
 			m.uvMapSurface(prim)
+			prim.calculateUvCenterCoords()
 		}
 	}
 }
@@ -95,4 +96,13 @@ func (m *Model) uvMapSurface(prim *ModelSurface) {
 	fmt.Printf("UV normalzd: %.2v\n", uv)
 
 	prim.UVCoordinatesPerIndex = uv
+}
+
+func (prim *ModelSurface) calculateUvCenterCoords() {
+	for i := range prim.UVCoordinatesPerIndex {
+		prim.CenterUVCoords[0] += prim.UVCoordinatesPerIndex[i][0]
+		prim.CenterUVCoords[1] += prim.UVCoordinatesPerIndex[i][1]
+	}
+	prim.CenterUVCoords[0] /= float64(len(prim.UVCoordinatesPerIndex))
+	prim.CenterUVCoords[1] /= float64(len(prim.UVCoordinatesPerIndex))
 }
