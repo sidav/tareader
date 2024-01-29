@@ -1,6 +1,7 @@
 package raylibrenderer
 
 import (
+	"totala_reader/geometry"
 	graphicadapter "totala_reader/graphic_adapter"
 	"totala_reader/model"
 )
@@ -44,6 +45,10 @@ func (r *RaylibRenderer) drawObject(obj *model.Model, parentOffsetX, parentOffse
 	currentOffsetX, currentOffsetY, currentOffsetZ := obj.XFromParent+parentOffsetX,
 		obj.YFromParent+parentOffsetY, obj.ZFromParent+parentOffsetZ
 
+	if obj.SelectionPrimitive != nil {
+		r.drawSelectionPrimitive(obj, obj.SelectionPrimitive, currentOffsetX, currentOffsetY, currentOffsetZ)
+	}
+
 	for _, p := range obj.Primitives {
 		if len(p.VertexIndices) == 4 {
 			r.drawQuadPrimitive(obj, p, currentOffsetX, currentOffsetY, currentOffsetZ)
@@ -57,6 +62,27 @@ func (r *RaylibRenderer) drawObject(obj *model.Model, parentOffsetX, parentOffse
 	}
 	if obj.SiblingObject != nil && len(obj.SiblingObject.Primitives) > 0 {
 		r.drawObject(obj.SiblingObject, parentOffsetX, parentOffsetY, parentOffsetZ)
+	}
+}
+
+func (r *RaylibRenderer) drawSelectionPrimitive(obj *model.Model, prim *model.ModelSurface, offsetX, offsetY, offsetZ float64) {
+	for i := 0; i < len(prim.VertexIndices); i++ {
+		x1 := (obj.Vertices[prim.VertexIndices[i]][0] + offsetX) * r.scaleFactor
+		y1 := (obj.Vertices[prim.VertexIndices[i]][1] + offsetY) * r.scaleFactor
+		z1 := (obj.Vertices[prim.VertexIndices[i]][2] + offsetZ) * r.scaleFactor
+
+		x1, y1, z1 = geometry.Rotate3dCoordsAroundY(x1, y1, z1, float64(r.frame)*3.141592654/180)
+
+		x2 := (obj.Vertices[prim.VertexIndices[(i+1)%len(prim.VertexIndices)]][0] + offsetX) * r.scaleFactor
+		y2 := (obj.Vertices[prim.VertexIndices[(i+1)%len(prim.VertexIndices)]][1] + offsetY) * r.scaleFactor
+		z2 := (obj.Vertices[prim.VertexIndices[(i+1)%len(prim.VertexIndices)]][2] + offsetZ) * r.scaleFactor
+
+		x2, y2, z2 = geometry.Rotate3dCoordsAroundY(x2, y2, z2, float64(r.frame)*3.141592654/180)
+
+		px1, py1 := obliqueProjectionInt32(x1, y1, z1)
+		px2, py2 := obliqueProjectionInt32(x2, y2, z2)
+		r.gAdapter.SetColor(getTaPaletteColor(2))
+		r.DrawLine(px1+r.onScreenOffX, py1+r.onScreenOffY, px2+r.onScreenOffX, py2+r.onScreenOffY)
 	}
 }
 
