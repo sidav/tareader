@@ -6,7 +6,12 @@ func (r *RaylibRenderer) canDrawOverZBufferAt(x, y int32, depth float64) bool {
 	if x < 0 || x >= int32(len(r.zBuffer)) || y < 0 || y >= int32(len(r.zBuffer[0])) {
 		return false
 	}
-	return r.zBuffer[x][y] < depth
+	// TODO: consider this variant, it may be better:
+	// const tolerance = 1.0 / 65536.0
+	// return r.zBuffer[x][y]-depth < tolerance
+
+	// Important: it's LEQ, not LESS! Else texturing for models such as coralab breaks.
+	return r.zBuffer[x][y] <= depth
 }
 
 func (r *RaylibRenderer) setZBufferValueAt(val float64, x, y int32) {
