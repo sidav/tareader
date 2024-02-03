@@ -1,9 +1,5 @@
 package raylibrenderer
 
-import (
-	"totala_reader/raylib_renderer/middleware"
-)
-
 func (r *RaylibRenderer) drawedge(x1, y1, x2, y2 int32, z1, z2 float64) {
 	side := 0
 	xslope := float64(x2-x1) / float64(y2-y1)
@@ -79,9 +75,9 @@ func (r *RaylibRenderer) HLineZBuf(x1, x2, y int32, color byte) {
 	zinc := (z2 - z1) / float64(x2-x1)
 	for x := x1; x <= x2; x++ {
 		if r.canDrawOverZBufferAt(x, y, z1) {
-			middleware.SetColor(getTaPaletteColor(uint8(color)))
+			r.gAdapter.SetColor(getTaPaletteColor(uint8(color)))
 			r.setZBufferValueAt(z1, x, y)
-			middleware.DrawPoint(x, y)
+			r.gAdapter.DrawPoint(x, y)
 		}
 		z1 += zinc
 	}

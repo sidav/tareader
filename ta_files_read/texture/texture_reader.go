@@ -87,7 +87,7 @@ func readUncompressedPixels(r *tafilesread.Reader, offset, width, height int) []
 	for i := 0; i < width; i++ {
 		pixels[i] = make([]uint8, height)
 		for j := 0; j < height; j++ {
-			index := i + j*height
+			index := i + j*width
 			pixels[i][j] = r.ReadByteFromBytesArray(offset, index)
 		}
 	}

@@ -2,18 +2,16 @@ package raylibrenderer
 
 import (
 	"fmt"
-	"totala_reader/raylib_renderer/middleware"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func (r *RaylibRenderer) ShowPalette() {
-	w, h := middleware.GetWindowSize()
+	w, h := r.gAdapter.GetRenderResolution()
 	colW, colH := w/16, h/16
 	for i := int32(0); i < colW; i++ {
 		for j := int32(0); j < colH; j++ {
 			color := uint8(i + 16*j)
-			middleware.SetColor(getTaPaletteColor(color))
+			r.gAdapter.SetColor(getTaPaletteColor(color))
 			r.FillRect(i*colW, j*colH, colW, colH)
 			rl.DrawText(fmt.Sprintf("%d", color), (i*colW + 2*colW/3 - 1), j*colH, 10, rl.Black)
 			rl.DrawText(fmt.Sprintf("%d", color), (i*colW + 2*colW/3), j*colH+1, 8, rl.White)
@@ -24,7 +22,7 @@ func (r *RaylibRenderer) ShowPalette() {
 func (r *RaylibRenderer) FillRect(x, y, w, h int32) {
 	for i := x; i < x+w; i++ {
 		for j := y; j < y+h; j++ {
-			middleware.DrawPoint(i, j)
+			r.gAdapter.DrawPoint(i, j)
 		}
 	}
 }

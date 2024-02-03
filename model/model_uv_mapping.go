@@ -11,11 +11,21 @@ func (m *Model) performUvMappingOnAllSurfaces() {
 		// UV-mapping for colored (= non-textured) primitives and for non-3d objects is not requred.
 		if prim.Texture != nil {
 			m.uvMapSurface(prim)
+			prim.calculateUvCenterCoords()
 		}
 	}
 }
 
 func (m *Model) uvMapSurface(prim *ModelSurface) {
+	// It's very simple if the polygon is quad:
+	if len(prim.VertexIndices) == 4 {
+		prim.UVCoordinatesPerIndex = [][2]float64{{0, 0}, {1, 0}, {1, 1}, {0, 1}}
+		return
+	} else {
+		// This panic left as I'm yet to see a model with non-quad primitive; need explicit warning for that.
+		panic(fmt.Sprintf("REMOVE THIS PANIC: Primitive with %d vertices detected!", len(prim.VertexIndices)))
+	}
+
 	// We take the first index (at position 0 in indices array) as (u,v) = (0,0)
 	// Step 1. Collect all the coordinates.
 	var allCoords [][3]float64
@@ -53,7 +63,7 @@ func (m *Model) uvMapSurface(prim *ModelSurface) {
 			geometry.DotProduct(&currCoords, &localY),
 		}
 	}
-	fmt.Printf("UV         : %.2v\n", uv)
+	fmt.Printf("Lcplne crds: %.2v\n", uv)
 
 	// Normalize UV coords (transform them to range [0.0 - 1.0])
 	minU, minV := math.MaxFloat64, math.MaxFloat64
@@ -86,4 +96,13 @@ func (m *Model) uvMapSurface(prim *ModelSurface) {
 	fmt.Printf("UV normalzd: %.2v\n", uv)
 
 	prim.UVCoordinatesPerIndex = uv
+}
+
+func (prim *ModelSurface) calculateUvCenterCoords() {
+	for i := range prim.UVCoordinatesPerIndex {
+		prim.CenterUVCoords[0] += prim.UVCoordinatesPerIndex[i][0]
+		prim.CenterUVCoords[1] += prim.UVCoordinatesPerIndex[i][1]
+	}
+	prim.CenterUVCoords[0] /= float64(len(prim.UVCoordinatesPerIndex))
+	prim.CenterUVCoords[1] /= float64(len(prim.UVCoordinatesPerIndex))
 }

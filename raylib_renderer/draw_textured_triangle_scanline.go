@@ -1,8 +1,6 @@
 package raylibrenderer
 
 import (
-	"math"
-	"totala_reader/raylib_renderer/middleware"
 	"totala_reader/ta_files_read/texture"
 )
 
@@ -172,14 +170,17 @@ func (r *RaylibRenderer) HLineTexturedZBufNoArr(x1, x2, y int32, z1, z2, u1, u2,
 	uinc := (u2 - u1) / float64(x2-x1)
 	vinc := (v2 - v1) / float64(x2-x1)
 
+	// Real texture coord for max U and V.
+	// (-0.5) here because it's -1 (as max coord can't be equal to size) added with +0.5 (for texture subpixel alignment)
+	maxUReal := float64(len(texture.Frames[0].Pixels)) - 0.5
+	maxVReal := float64(len(texture.Frames[0].Pixels[0])) - 0.5
 	for x := x1; x <= x2; x++ {
 		if r.canDrawOverZBufferAt(x, y, z1) {
-			texW, texH := len(texture.Frames[0].Pixels), len(texture.Frames[0].Pixels[0])
-			uCoord := int(math.Abs(math.Round(float64(texW)*u1))) % texW
-			vCoord := int(math.Abs(math.Round(float64(texH)*v1))) % texH
-			middleware.SetColor(getTaPaletteColor(texture.Frames[0].Pixels[uCoord][vCoord]))
+			uCoord := int(maxUReal * u1)
+			vCoord := int(maxVReal * v1)
+			r.gAdapter.SetColor(getTaPaletteColor(texture.Frames[0].Pixels[uCoord][vCoord]))
 			r.setZBufferValueAt(z1, x, y)
-			middleware.DrawPoint(x, y)
+			r.gAdapter.DrawPoint(x, y)
 		}
 		z1 += zinc
 		u1 += uinc
