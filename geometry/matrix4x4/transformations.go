@@ -2,6 +2,18 @@ package matrix4x4
 
 import "math"
 
+func (m1 *Matrix4x4) Scale(factor float64) {
+	m1.Vals[0][0] *= factor
+	m1.Vals[1][1] *= factor
+	m1.Vals[2][2] *= factor
+}
+
+func (m1 *Matrix4x4) Translate(x, y, z float64) {
+	m1.Vals[0][3] += x
+	m1.Vals[1][3] += y
+	m1.Vals[2][3] += z
+}
+
 func (m1 *Matrix4x4) RotateAroundX(radians float64) {
 	sin := math.Sin(radians)
 	cos := math.Cos(radians)
