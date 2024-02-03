@@ -94,7 +94,7 @@ func (rb *RaylibBackend) SetColor(r, g, b uint8) {
 
 func (rb *RaylibBackend) DrawPoint(x, y int32) {
 	coord := x + y*rb.renderW
-	if coord < rb.renderW*rb.renderH {
+	if coord > 0 && coord < rb.renderW*rb.renderH {
 		rb.frameBuffer[coord] = rb.currColor
 	}
 }

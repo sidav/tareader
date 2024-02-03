@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime/pprof"
 	"strings"
 	"time"
+	"totala_reader/geometry"
+	"totala_reader/geometry/matrix"
 	graphicadapter "totala_reader/graphic_adapter"
 	"totala_reader/model"
 	raylibrenderer "totala_reader/raylib_renderer"
@@ -16,6 +19,13 @@ import (
 )
 
 func main() {
+	f, err := os.Create("cpu.pprof")
+	if err != nil {
+		panic(err)
+	}
+	pprof.StartCPUProfile(f)
+	defer pprof.StopCPUProfile()
+
 	openedFile := "game_files/files_3do/armlab.3do"
 	if len(os.Args) > 1 {
 		openedFile = os.Args[1]
@@ -52,9 +62,9 @@ func main() {
 
 		for !rl.IsKeyDown(rl.KeyEscape) {
 			start := time.Now()
-			gAdapter.BeginFrame()
+			// gAdapter.BeginFrame()
 			rend.DrawModel(model)
-			gAdapter.EndFrame()
+			// gAdapter.EndFrame()
 			totalFrames++
 			timeSince := time.Since(start)
 			totalDuration += timeSince
