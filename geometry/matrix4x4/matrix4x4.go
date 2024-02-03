@@ -1,4 +1,4 @@
-package matrix
+package matrix4x4
 
 import (
 	"math"
@@ -65,7 +65,7 @@ func (m1 *Matrix4x4) MultiplyByMatrix4x4(m2 *Matrix4x4) *Matrix4x4 {
 	}
 }
 
-func (m1 *Matrix4x4) RotateAroundX(radians float64) *Matrix4x4 {
+func (m1 *Matrix4x4) GetRotatedAroundX(radians float64) *Matrix4x4 {
 	// TODO: rewrite without returning value; change the m1 in place
 	sin := math.Sin(radians)
 	cos := math.Cos(radians)
@@ -103,7 +103,7 @@ func (m1 *Matrix4x4) RotateAroundX(radians float64) *Matrix4x4 {
 	}
 }
 
-func (m1 *Matrix4x4) RotateAroundY(radians float64) *Matrix4x4 {
+func (m1 *Matrix4x4) GetRotatedAroundY(radians float64) *Matrix4x4 {
 	sin := math.Sin(radians)
 	cos := math.Cos(radians)
 	// matrix[line_number][column_number]
@@ -141,7 +141,7 @@ func (m1 *Matrix4x4) RotateAroundY(radians float64) *Matrix4x4 {
 	}
 }
 
-func (m1 *Matrix4x4) RotateAroundZ(radians float64) *Matrix4x4 {
+func (m1 *Matrix4x4) GetRotatedAroundZ(radians float64) *Matrix4x4 {
 	sin := math.Sin(radians)
 	cos := math.Cos(radians)
 	// matrix[line_number][column_number]
