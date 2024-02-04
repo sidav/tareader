@@ -8,7 +8,7 @@ import (
 	"time"
 	graphicadapter "totala_reader/graphic_adapter"
 	"totala_reader/model"
-	raylibrenderer "totala_reader/raylib_renderer"
+	"totala_reader/renderer"
 	binaryreader "totala_reader/ta_files_read"
 	"totala_reader/ta_files_read/object3d"
 	"totala_reader/ta_files_read/texture"
@@ -35,7 +35,7 @@ func main() {
 	var scale int32 = 1
 	gAdapter.Init(1366, 768)
 	gAdapter.SetInternalResolution(1366/scale, 768/scale)
-	rend := raylibrenderer.RaylibRenderer{}
+	rend := renderer.ModelRenderer{}
 	rend.Init(gAdapter)
 
 	textures := readAllGAFsFromDirectory("game_files/files_gaf")

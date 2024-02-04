@@ -1,4 +1,4 @@
-package raylibrenderer
+package renderer
 
 import (
 	"totala_reader/geometry"
@@ -6,7 +6,8 @@ import (
 	"totala_reader/model"
 )
 
-type RaylibRenderer struct {
+// Renders MODEL, not the object with matrices
+type ModelRenderer struct {
 	gAdapter                   graphicadapter.GraphicBackend
 	onScreenOffX, onScreenOffY int32
 	fontSize                   int32
@@ -21,7 +22,7 @@ type RaylibRenderer struct {
 	debugMode bool
 }
 
-func (r *RaylibRenderer) Init(adapter graphicadapter.GraphicBackend) {
+func (r *ModelRenderer) Init(adapter graphicadapter.GraphicBackend) {
 	r.gAdapter = adapter
 	r.onScreenOffX, r.onScreenOffY = r.gAdapter.GetRenderResolution()
 	r.onScreenOffX /= 2
@@ -31,7 +32,7 @@ func (r *RaylibRenderer) Init(adapter graphicadapter.GraphicBackend) {
 	r.initZBuffer()
 }
 
-func (r *RaylibRenderer) DrawModel(rootObject *model.Model) {
+func (r *ModelRenderer) DrawModel(rootObject *model.Model) {
 
 	r.clearZBuffer()
 
@@ -41,7 +42,7 @@ func (r *RaylibRenderer) DrawModel(rootObject *model.Model) {
 	r.frame++
 }
 
-func (r *RaylibRenderer) drawObject(obj *model.Model, parentOffsetX, parentOffsetY, parentOffsetZ float64) {
+func (r *ModelRenderer) drawObject(obj *model.Model, parentOffsetX, parentOffsetY, parentOffsetZ float64) {
 	currentOffsetX, currentOffsetY, currentOffsetZ := obj.XFromParent+parentOffsetX,
 		obj.YFromParent+parentOffsetY, obj.ZFromParent+parentOffsetZ
 
@@ -65,7 +66,7 @@ func (r *RaylibRenderer) drawObject(obj *model.Model, parentOffsetX, parentOffse
 	}
 }
 
-func (r *RaylibRenderer) drawSelectionPrimitive(obj *model.Model, prim *model.ModelSurface, offsetX, offsetY, offsetZ float64) {
+func (r *ModelRenderer) drawSelectionPrimitive(obj *model.Model, prim *model.ModelSurface, offsetX, offsetY, offsetZ float64) {
 	for i := 0; i < len(prim.VertexIndices); i++ {
 		x1 := (obj.Vertices[prim.VertexIndices[i]][0] + offsetX) * r.scaleFactor
 		y1 := (obj.Vertices[prim.VertexIndices[i]][1] + offsetY) * r.scaleFactor
@@ -88,7 +89,7 @@ func (r *RaylibRenderer) drawSelectionPrimitive(obj *model.Model, prim *model.Mo
 
 // Separate routine needed because trapezoids DON'T texture properly
 // So we need separate triangulation (quad is split to 4 triangles, each has quad's center as a vertex)
-func (r *RaylibRenderer) drawQuadPrimitive(obj *model.Model, prim *model.ModelSurface, offsetX, offsetY, offsetZ float64) {
+func (r *ModelRenderer) drawQuadPrimitive(obj *model.Model, prim *model.ModelSurface, offsetX, offsetY, offsetZ float64) {
 	if len(prim.VertexIndices) != 4 || obj.SelectionPrimitive == prim {
 		return
 	}
@@ -128,7 +129,7 @@ func (r *RaylibRenderer) drawQuadPrimitive(obj *model.Model, prim *model.ModelSu
 	}
 }
 
-func (r *RaylibRenderer) drawNonquadPrimitive(obj *model.Model, prim *model.ModelSurface, offsetX, offsetY, offsetZ float64) {
+func (r *ModelRenderer) drawNonquadPrimitive(obj *model.Model, prim *model.ModelSurface, offsetX, offsetY, offsetZ float64) {
 	if len(prim.VertexIndices) < 3 || obj.SelectionPrimitive == prim {
 		return
 	}
@@ -168,7 +169,7 @@ func (r *RaylibRenderer) drawNonquadPrimitive(obj *model.Model, prim *model.Mode
 	}
 }
 
-func (r *RaylibRenderer) Draw3dTriangleStruct(t *triangle) {
+func (r *ModelRenderer) Draw3dTriangleStruct(t *triangle) {
 	projX0, projY0 := obliqueProjectionInt32(t.coords[0][0], t.coords[0][1], t.coords[0][2])
 	projX1, projY1 := obliqueProjectionInt32(t.coords[1][0], t.coords[1][1], t.coords[1][2])
 	projX2, projY2 := obliqueProjectionInt32(t.coords[2][0], t.coords[2][1], t.coords[2][2])
