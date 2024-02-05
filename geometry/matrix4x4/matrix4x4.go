@@ -23,3 +23,9 @@ func (m *Matrix4x4) ResetToUnitMatrix() {
 		{0, 0, 0, 1},
 	}
 }
+
+func (m *Matrix4x4) Dup() *Matrix4x4 {
+	m2 := &Matrix4x4{}
+	copy(m2.Vals[:], m.Vals[:])
+	return m2
+}

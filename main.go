@@ -70,6 +70,9 @@ func main() {
 				totalFrames, timeSince, int(time.Second/timeSince),
 				totalDuration/time.Duration(totalFrames), int(time.Second/(totalDuration/time.Duration(totalFrames))))
 			gAdapter.Flush()
+			timeSince = time.Since(start)
+			pp("                         with flush: %v ~> %d FPS",
+				timeSince, int(time.Second/timeSince))
 			// time.Sleep(time.Microsecond)
 			// gAdapter.Clear()
 		}
