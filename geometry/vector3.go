@@ -1,6 +1,10 @@
 package geometry
 
-import "math"
+import (
+	"fmt"
+	"math"
+	"strconv"
+)
 
 type Vector3 struct {
 	X, Y, Z float64
@@ -19,6 +23,14 @@ func (a *Vector3) Normalize() {
 	a.X /= length
 	a.Y /= length
 	a.Z /= length
+}
+
+func (a *Vector3) Print() {
+	fmt.Printf("(%s  %5s  %5s)\n",
+		strconv.FormatFloat(a.X, 'f', 2, 64),
+		strconv.FormatFloat(a.Y, 'f', 2, 64),
+		strconv.FormatFloat(a.Z, 'f', 2, 64),
+	)
 }
 
 func CrossProduct(a, b *Vector3) Vector3 {
