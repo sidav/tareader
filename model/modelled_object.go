@@ -38,7 +38,7 @@ func initObjectFromModel(m *Model, parentObj *ModelledObject) *ModelledObject {
 		Matrix:         matrix4x4.NewUnitMatrix(),
 		ModelForObject: m,
 	}
-	const scale = 1
+	const scale = 6
 	if parentObj == nil {
 		obj.Matrix.Scale(scale)
 	} else {
