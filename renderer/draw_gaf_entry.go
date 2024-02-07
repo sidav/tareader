@@ -5,7 +5,7 @@ import (
 )
 
 // Draw the GAF entry, just to look at it.
-func (r *ModelRenderer) DrawGafFrame(gafEntry *texture.GafEntry) {
+func (r *Renderer) DrawGafFrame(gafEntry *texture.GafEntry) {
 	const pixelSize = 3
 	offsetFromTop := int32(36)
 	for _, f := range gafEntry.Frames {

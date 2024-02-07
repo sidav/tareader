@@ -1,18 +1,15 @@
 package renderer
 
 import (
-	"totala_reader/geometry"
+	. "totala_reader/geometry/matrix4x4"
 	graphicadapter "totala_reader/graphic_adapter"
-	"totala_reader/model"
+	. "totala_reader/model"
 )
 
-// Renders MODEL, not the object with matrices
-type ModelRenderer struct {
+// Renders OBJECT (the stuff with matrices), not just the model
+type Renderer struct {
 	gAdapter                   graphicadapter.GraphicBackend
 	onScreenOffX, onScreenOffY int32
-	fontSize                   int32
-	scaleFactor                float64
-	totalMessages              int32
 
 	frame int
 
@@ -22,63 +19,79 @@ type ModelRenderer struct {
 	debugMode bool
 }
 
-func (r *ModelRenderer) Init(adapter graphicadapter.GraphicBackend) {
+func (r *Renderer) Init(adapter graphicadapter.GraphicBackend) {
 	r.gAdapter = adapter
 	r.onScreenOffX, r.onScreenOffY = r.gAdapter.GetRenderResolution()
 	r.onScreenOffX /= 2
 	r.onScreenOffY = 55 * r.onScreenOffY / 100
-	r.scaleFactor = 4
 	r.gAdapter.Clear()
 	r.initZBuffer()
 }
 
-func (r *ModelRenderer) DrawModel(rootObject *model.Model) {
-
+func (r *Renderer) RenderObject(rootObject *ModelledObject) {
 	r.clearZBuffer()
-
-	r.totalMessages = 0
 	r.gAdapter.Clear()
-	r.drawObject(rootObject, 0, 0, 0)
+	r.drawModelledObject(rootObject, nil)
 	r.frame++
 }
 
-func (r *ModelRenderer) drawObject(obj *model.Model, parentOffsetX, parentOffsetY, parentOffsetZ float64) {
-	currentOffsetX, currentOffsetY, currentOffsetZ := obj.XFromParent+parentOffsetX,
-		obj.YFromParent+parentOffsetY, obj.ZFromParent+parentOffsetZ
+func (r *Renderer) drawModelledObject(currObj *ModelledObject, parentWrldMtrx *Matrix4x4) {
+	mdl := currObj.ModelForObject
 
-	if obj.SelectionPrimitive != nil {
-		r.drawSelectionPrimitive(obj, obj.SelectionPrimitive, currentOffsetX, currentOffsetY, currentOffsetZ)
+	// Dummy animation code, safe to delete
+	const rotateByDegrees = 1.0
+	if currObj.Name == "base" || currObj.Name == "ground" {
+		currObj.Matrix.RotateAroundY(rotateByDegrees * 3.14159265 / 180)
+	}
+	if currObj.Name == "charged" || currObj.Name == "fork1" {
+		currObj.Matrix.RotateAroundX(-3 * rotateByDegrees * 3.14159265 / 180)
+	}
+	if currObj.Name == "luparm" || currObj.Name == "fork2" {
+		currObj.Matrix.RotateAroundX(3 * rotateByDegrees * 3.14159265 / 180)
+	}
+	// Dummy animation code ended
+
+	currWrldMtrx := currObj.Matrix.Dup() // it will be transformed to world one later, it's a dup just for now
+	if parentWrldMtrx != nil {
+		currWrldMtrx = parentWrldMtrx.MultiplyByMatrix4x4(currWrldMtrx)
+		ox, oy, oz := parentWrldMtrx.MultiplyByXyz0Vector(mdl.XFromParent, mdl.YFromParent, mdl.ZFromParent)
+		currWrldMtrx.Translate(ox, oy, oz)
 	}
 
-	for _, p := range obj.Primitives {
-		if len(p.VertexIndices) == 4 {
-			r.drawQuadPrimitive(obj, p, currentOffsetX, currentOffsetY, currentOffsetZ)
+	// Render primitives
+	if mdl.SelectionPrimitive != nil {
+		r.drawSelectionPrimitive(currWrldMtrx, mdl, mdl.SelectionPrimitive)
+	}
+	for _, p := range mdl.Primitives {
+		if mdl.SelectionPrimitive == p {
+			continue
+		} else if len(p.VertexIndices) == 4 {
+			r.drawQuadPrimitive(currWrldMtrx, mdl, p)
 		} else {
-			r.drawNonquadPrimitive(obj, p, currentOffsetX, currentOffsetY, currentOffsetZ)
+			r.drawNonquadPrimitive(currWrldMtrx, mdl, p)
 		}
 	}
 
-	if obj.ChildObject != nil && len(obj.ChildObject.Primitives) > 0 {
-		r.drawObject(obj.ChildObject, currentOffsetX, currentOffsetY, currentOffsetZ)
+	if currObj.Child != nil { // && len(mdl.ChildObject.Primitives) > 0 {
+		r.drawModelledObject(currObj.Child, currWrldMtrx)
 	}
-	if obj.SiblingObject != nil && len(obj.SiblingObject.Primitives) > 0 {
-		r.drawObject(obj.SiblingObject, parentOffsetX, parentOffsetY, parentOffsetZ)
+	if currObj.Sibling != nil { // && len(mdl.SiblingObject.Primitives) > 0 {
+		r.drawModelledObject(currObj.Sibling, parentWrldMtrx)
 	}
 }
 
-func (r *ModelRenderer) drawSelectionPrimitive(obj *model.Model, prim *model.ModelSurface, offsetX, offsetY, offsetZ float64) {
+func (r *Renderer) drawSelectionPrimitive(objWorldMatrix *Matrix4x4, obj *Model, prim *ModelSurface) {
 	for i := 0; i < len(prim.VertexIndices); i++ {
-		x1 := (obj.Vertices[prim.VertexIndices[i]][0] + offsetX) * r.scaleFactor
-		y1 := (obj.Vertices[prim.VertexIndices[i]][1] + offsetY) * r.scaleFactor
-		z1 := (obj.Vertices[prim.VertexIndices[i]][2] + offsetZ) * r.scaleFactor
-
-		x1, y1, z1 = geometry.Rotate3dCoordsAroundY(x1, y1, z1, float64(r.frame)*3.141592654/180)
-
-		x2 := (obj.Vertices[prim.VertexIndices[(i+1)%len(prim.VertexIndices)]][0] + offsetX) * r.scaleFactor
-		y2 := (obj.Vertices[prim.VertexIndices[(i+1)%len(prim.VertexIndices)]][1] + offsetY) * r.scaleFactor
-		z2 := (obj.Vertices[prim.VertexIndices[(i+1)%len(prim.VertexIndices)]][2] + offsetZ) * r.scaleFactor
-
-		x2, y2, z2 = geometry.Rotate3dCoordsAroundY(x2, y2, z2, float64(r.frame)*3.141592654/180)
+		x1, y1, z1 := objWorldMatrix.MultiplyByXyz1Vector(
+			(obj.Vertices[prim.VertexIndices[i]][0]),
+			(obj.Vertices[prim.VertexIndices[i]][1]),
+			(obj.Vertices[prim.VertexIndices[i]][2]),
+		)
+		x2, y2, z2 := objWorldMatrix.MultiplyByXyz1Vector(
+			(obj.Vertices[prim.VertexIndices[(i+1)%len(prim.VertexIndices)]][0]),
+			(obj.Vertices[prim.VertexIndices[(i+1)%len(prim.VertexIndices)]][1]),
+			(obj.Vertices[prim.VertexIndices[(i+1)%len(prim.VertexIndices)]][2]),
+		)
 
 		px1, py1 := obliqueProjectionInt32(x1, y1, z1)
 		px2, py2 := obliqueProjectionInt32(x2, y2, z2)
@@ -89,28 +102,14 @@ func (r *ModelRenderer) drawSelectionPrimitive(obj *model.Model, prim *model.Mod
 
 // Separate routine needed because trapezoids DON'T texture properly
 // So we need separate triangulation (quad is split to 4 triangles, each has quad's center as a vertex)
-func (r *ModelRenderer) drawQuadPrimitive(obj *model.Model, prim *model.ModelSurface, offsetX, offsetY, offsetZ float64) {
-	if len(prim.VertexIndices) != 4 || obj.SelectionPrimitive == prim {
-		return
-	}
-
-	zerox, zeroy, zeroz := (prim.CenterCoords[0]+offsetX)*r.scaleFactor,
-		(prim.CenterCoords[1]+offsetY)*r.scaleFactor,
-		(prim.CenterCoords[2]+offsetZ)*r.scaleFactor
+func (r *Renderer) drawQuadPrimitive(currWrldMtrx *Matrix4x4, mdl *Model, prim *ModelSurface) {
+	zeroCrds := currWrldMtrx.MultiplyByArr3Vector(prim.CenterCoords)
 	for i := 0; i < len(prim.VertexIndices); i++ {
 		newTriangle := &triangle{
 			coords: [3][3]float64{
-				{zerox, zeroy, zeroz},
-				{
-					(obj.Vertices[prim.VertexIndices[i]][0] + offsetX) * r.scaleFactor,
-					(obj.Vertices[prim.VertexIndices[i]][1] + offsetY) * r.scaleFactor,
-					(obj.Vertices[prim.VertexIndices[i]][2] + offsetZ) * r.scaleFactor,
-				},
-				{
-					(obj.Vertices[prim.VertexIndices[(i+1)%4]][0] + offsetX) * r.scaleFactor,
-					(obj.Vertices[prim.VertexIndices[(i+1)%4]][1] + offsetY) * r.scaleFactor,
-					(obj.Vertices[prim.VertexIndices[(i+1)%4]][2] + offsetZ) * r.scaleFactor,
-				},
+				zeroCrds,
+				currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[i]]),
+				currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[(i+1)%4]]),
 			},
 		}
 		if len(prim.UVCoordinatesPerIndex) > 0 {
@@ -123,34 +122,22 @@ func (r *ModelRenderer) drawQuadPrimitive(obj *model.Model, prim *model.ModelSur
 		} else {
 			newTriangle.colorPaletteIndex = prim.Color
 		}
-		newTriangle.rotate(r.frame)
-		newTriangle.calcMiddle()
 		r.Draw3dTriangleStruct(newTriangle)
 	}
 }
 
-func (r *ModelRenderer) drawNonquadPrimitive(obj *model.Model, prim *model.ModelSurface, offsetX, offsetY, offsetZ float64) {
-	if len(prim.VertexIndices) < 3 || obj.SelectionPrimitive == prim {
+func (r *Renderer) drawNonquadPrimitive(currWrldMtrx *Matrix4x4, mdl *Model, prim *ModelSurface) {
+	if len(prim.VertexIndices) < 3 {
 		return
 	}
 
-	zerox, zeroy, zeroz := (obj.Vertices[prim.VertexIndices[0]][0]+offsetX)*r.scaleFactor,
-		(obj.Vertices[prim.VertexIndices[0]][1]+offsetY)*r.scaleFactor,
-		(obj.Vertices[prim.VertexIndices[0]][2]+offsetZ)*r.scaleFactor
+	zeroCrds := currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[0]])
 	for i := 2; i < len(prim.VertexIndices); i++ {
 		newTriangle := &triangle{
 			coords: [3][3]float64{
-				{zerox, zeroy, zeroz},
-				{
-					(obj.Vertices[prim.VertexIndices[i-1]][0] + offsetX) * r.scaleFactor,
-					(obj.Vertices[prim.VertexIndices[i-1]][1] + offsetY) * r.scaleFactor,
-					(obj.Vertices[prim.VertexIndices[i-1]][2] + offsetZ) * r.scaleFactor,
-				},
-				{
-					(obj.Vertices[prim.VertexIndices[i]][0] + offsetX) * r.scaleFactor,
-					(obj.Vertices[prim.VertexIndices[i]][1] + offsetY) * r.scaleFactor,
-					(obj.Vertices[prim.VertexIndices[i]][2] + offsetZ) * r.scaleFactor,
-				},
+				zeroCrds,
+				currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[i-1]]),
+				currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[i]]),
 			},
 		}
 		if len(prim.UVCoordinatesPerIndex) > 0 {
@@ -163,13 +150,11 @@ func (r *ModelRenderer) drawNonquadPrimitive(obj *model.Model, prim *model.Model
 		} else {
 			newTriangle.colorPaletteIndex = prim.Color
 		}
-		newTriangle.rotate(r.frame)
-		newTriangle.calcMiddle()
 		r.Draw3dTriangleStruct(newTriangle)
 	}
 }
 
-func (r *ModelRenderer) Draw3dTriangleStruct(t *triangle) {
+func (r *Renderer) Draw3dTriangleStruct(t *triangle) {
 	projX0, projY0 := obliqueProjectionInt32(t.coords[0][0], t.coords[0][1], t.coords[0][2])
 	projX1, projY1 := obliqueProjectionInt32(t.coords[1][0], t.coords[1][1], t.coords[1][2])
 	projX2, projY2 := obliqueProjectionInt32(t.coords[2][0], t.coords[2][1], t.coords[2][2])

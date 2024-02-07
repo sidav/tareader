@@ -2,7 +2,7 @@ package renderer
 
 import "math"
 
-func (r *ModelRenderer) canDrawOverZBufferAt(x, y int32, depth float64) bool {
+func (r *Renderer) canDrawOverZBufferAt(x, y int32, depth float64) bool {
 	if x < 0 || x >= int32(len(r.zBuffer)) || y < 0 || y >= int32(len(r.zBuffer[0])) {
 		return false
 	}
@@ -14,7 +14,7 @@ func (r *ModelRenderer) canDrawOverZBufferAt(x, y int32, depth float64) bool {
 	return r.zBuffer[x][y] <= depth
 }
 
-func (r *ModelRenderer) setZBufferValueAt(val float64, x, y int32) {
+func (r *Renderer) setZBufferValueAt(val float64, x, y int32) {
 	r.zBuffer[x][y] = val
 	if x < r.zBufMinX {
 		r.zBufMinX = x
@@ -30,7 +30,7 @@ func (r *ModelRenderer) setZBufferValueAt(val float64, x, y int32) {
 	}
 }
 
-func (r *ModelRenderer) initZBuffer() {
+func (r *Renderer) initZBuffer() {
 	w, h := r.gAdapter.GetRenderResolution()
 	r.zBuffer = make([][]float64, w)
 	for i := range r.zBuffer {
@@ -45,7 +45,7 @@ func (r *ModelRenderer) initZBuffer() {
 	}
 }
 
-func (r *ModelRenderer) clearZBuffer() {
+func (r *Renderer) clearZBuffer() {
 	for i := r.zBufMinX; i <= r.zBufMaxX; i++ {
 		for j := r.zBufMinY; j <= r.zBufMaxY; j++ {
 			r.zBuffer[i][j] = -math.MaxFloat64

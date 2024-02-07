@@ -5,7 +5,7 @@ import (
 )
 
 // ZBuffered horizontal scanline fill triangle algorithm.
-func (r *ModelRenderer) scanlineTexturedTriangle(x0, y0, x1, y1, x2, y2 int32, z0, z1, z2, u0, u1, u2, v0, v1, v2 float64, texture *texture.GafEntry) {
+func (r *Renderer) scanlineTexturedTriangle(x0, y0, x1, y1, x2, y2 int32, z0, z1, z2, u0, u1, u2, v0, v1, v2 float64, texture *texture.GafEntry) {
 	var a, b, y, last int32
 	var az, bz float64         // for z-buffering
 	var au, bu, av, bv float64 // for texture mapping
@@ -159,7 +159,7 @@ func (r *ModelRenderer) scanlineTexturedTriangle(x0, y0, x1, y1, x2, y2 int32, z
 	}
 }
 
-func (r *ModelRenderer) HLineTexturedZBufNoArr(x1, x2, y int32, z1, z2, u1, u2, v1, v2 float64, texture *texture.GafEntry) {
+func (r *Renderer) HLineTexturedZBufNoArr(x1, x2, y int32, z1, z2, u1, u2, v1, v2 float64, texture *texture.GafEntry) {
 	if x1 > x2 {
 		x1, x2 = x2, x1
 		z1, z2 = z2, z1

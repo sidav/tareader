@@ -11,7 +11,7 @@ var zpos [1080][2]float64
 var uedge [1080][2]float64
 var vedge [1080][2]float64
 
-func (r *ModelRenderer) drawEdgeTextured(x1, y1, x2, y2 int32, z1, z2, u1, u2, v1, v2 float64) {
+func (r *Renderer) drawEdgeTextured(x1, y1, x2, y2 int32, z1, z2, u1, u2, v1, v2 float64) {
 	side := 0
 	xslope := float64(x2-x1) / float64(y2-y1)
 	zslope := (z2 - z1) / float64(y2-y1)
@@ -43,7 +43,7 @@ func (r *ModelRenderer) drawEdgeTextured(x1, y1, x2, y2 int32, z1, z2, u1, u2, v
 	}
 }
 
-func (r *ModelRenderer) drawTexturedTriangle(x1, y1, x2, y2, x3, y3 int32, z1, z2, z3, u1, u2, u3, v1, v2, v3 float64, texture *texture.GafEntry) {
+func (r *Renderer) drawTexturedTriangle(x1, y1, x2, y2, x3, y3 int32, z1, z2, z3, u1, u2, u3, v1, v2, v3 float64, texture *texture.GafEntry) {
 	var minx, maxx int32
 	r.drawEdgeTextured(x1, y1, x2, y2, z1, z2, u1, u2, v1, v2)
 	r.drawEdgeTextured(x2, y2, x3, y3, z2, z3, u2, u3, v2, v3)
@@ -85,7 +85,7 @@ func (r *ModelRenderer) drawTexturedTriangle(x1, y1, x2, y2, x3, y3 int32, z1, z
 	}
 }
 
-func (r *ModelRenderer) HLineTexturedZBuf(x1, x2, y int32, texture *texture.GafEntry) {
+func (r *Renderer) HLineTexturedZBuf(x1, x2, y int32, texture *texture.GafEntry) {
 	z1, z2 := zpos[y][0], zpos[y][1]
 	u1, u2 := uedge[y][0], uedge[y][1]
 	v1, v2 := vedge[y][0], vedge[y][1]

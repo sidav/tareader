@@ -1,6 +1,6 @@
 package renderer
 
-func (r *ModelRenderer) DrawLine(fromx, fromy, tox, toy int32) {
+func (r *Renderer) DrawLine(fromx, fromy, tox, toy int32) {
 	deltax := fastInt32Abs(tox - fromx)
 	deltay := fastInt32Abs(toy - fromy)
 	var xmod int32 = 1

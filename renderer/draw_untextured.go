@@ -1,6 +1,6 @@
 package renderer
 
-func (r *ModelRenderer) drawedge(x1, y1, x2, y2 int32, z1, z2 float64) {
+func (r *Renderer) drawedge(x1, y1, x2, y2 int32, z1, z2 float64) {
 	side := 0
 	xslope := float64(x2-x1) / float64(y2-y1)
 	zslope := (z2 - z1) / float64(y2-y1)
@@ -22,7 +22,7 @@ func (r *ModelRenderer) drawedge(x1, y1, x2, y2 int32, z1, z2 float64) {
 	}
 }
 
-func (r *ModelRenderer) drawFilledTriangle(x1, y1, x2, y2, x3, y3 int32, z1, z2, z3 float64, color byte) {
+func (r *Renderer) drawFilledTriangle(x1, y1, x2, y2, x3, y3 int32, z1, z2, z3 float64, color byte) {
 
 	var minx, maxx int32
 	r.drawedge(x1, y1, x2, y2, z1, z2)
@@ -65,7 +65,7 @@ func (r *ModelRenderer) drawFilledTriangle(x1, y1, x2, y2, x3, y3 int32, z1, z2,
 	}
 }
 
-func (r *ModelRenderer) HLineZBuf(x1, x2, y int32, color byte) {
+func (r *Renderer) HLineZBuf(x1, x2, y int32, color byte) {
 	z1 := zpos[y][0]
 	z2 := zpos[y][1]
 	if x1 > x2 {
