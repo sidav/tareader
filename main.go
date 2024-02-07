@@ -6,8 +6,6 @@ import (
 	"runtime/pprof"
 	"strings"
 	"time"
-	"totala_reader/geometry"
-	"totala_reader/geometry/matrix"
 	graphicadapter "totala_reader/graphic_adapter"
 	"totala_reader/model"
 	raylibrenderer "totala_reader/raylib_renderer"
