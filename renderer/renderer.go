@@ -159,7 +159,7 @@ func (r *Renderer) Draw3dTriangleStruct(t *triangle) {
 	projX1, projY1 := obliqueProjectionInt32(t.coords[1][0], t.coords[1][1], t.coords[1][2])
 	projX2, projY2 := obliqueProjectionInt32(t.coords[2][0], t.coords[2][1], t.coords[2][2])
 	if t.texture == nil {
-		r.drawFilledTriangle(
+		r.drawRasterizedFilledTriangle(
 			projX0+r.onScreenOffX,
 			projY0+r.onScreenOffY,
 			projX1+r.onScreenOffX,
@@ -172,7 +172,7 @@ func (r *Renderer) Draw3dTriangleStruct(t *triangle) {
 			t.colorPaletteIndex,
 		)
 	} else {
-		r.drawTexturedTriangle(
+		r.drawRasterizedTexturedTriangle(
 			projX0+r.onScreenOffX,
 			projY0+r.onScreenOffY,
 			projX1+r.onScreenOffX,

@@ -1,7 +1,7 @@
 package renderer
 
 // ZBuffered horizontal scanline fill triangle algorithm.
-func (r *Renderer) scanlineFillTriangle(x0, y0, x1, y1, x2, y2 int32, z0, z1, z2 float64, color byte) {
+func (r *Renderer) drawScanlineFilledTriangle(x0, y0, x1, y1, x2, y2 int32, z0, z1, z2 float64, color byte) {
 	var a, b, y, last int32
 	var az, bz float64 // for z-buffering
 	// Sort coordinates by Y order (y2 >= y1 >= y0)
