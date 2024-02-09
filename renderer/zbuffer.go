@@ -6,12 +6,10 @@ func (r *Renderer) canDrawOverZBufferAt(x, y int32, depth float64) bool {
 	if x < 0 || x >= int32(len(r.zBuffer)) || y < 0 || y >= int32(len(r.zBuffer[0])) {
 		return false
 	}
-	// TODO: consider this variant, it may be better:
-	// const tolerance = 1.0 / 65536.0
-	// return r.zBuffer[x][y]-depth < tolerance
 
-	// Important: it's LEQ, not LESS! Else texturing for models such as coralab breaks.
-	return r.zBuffer[x][y] <= depth
+	// There was <= instead of <, but this variant rendered obsolete since back-face culling was implemented.
+	// (Back-face culling solves see-through texturing of two-side primitives better than this zbuffer stuff did)
+	return r.zBuffer[x][y] < depth
 }
 
 func (r *Renderer) setZBufferValueAt(val float64, x, y int32) {

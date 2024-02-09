@@ -158,6 +158,15 @@ func (r *Renderer) Draw3dTriangleStruct(t *triangle) {
 	projX0, projY0 := obliqueProjectionInt32(t.coords[0][0], t.coords[0][1], t.coords[0][2])
 	projX1, projY1 := obliqueProjectionInt32(t.coords[1][0], t.coords[1][1], t.coords[1][2])
 	projX2, projY2 := obliqueProjectionInt32(t.coords[2][0], t.coords[2][1], t.coords[2][2])
+
+	// Back-face culling based on the on-screen vertex draw order
+	x10, y10 := projX0-projX1, projY0-projY1
+	x12, y12 := projX2-projX1, projY2-projY1
+	// If clockwise, skip this triangle
+	if x10*y12-x12*y10 >= 0 {
+		return
+	}
+
 	if t.texture == nil {
 		r.drawRasterizedFilledTriangle(
 			projX0+r.onScreenOffX,
