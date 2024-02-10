@@ -1,6 +1,7 @@
 package model
 
 import (
+	"totala_reader/geometry"
 	"totala_reader/ta_files_read/object3d"
 	"totala_reader/ta_files_read/texture"
 )
@@ -37,6 +38,8 @@ func NewModelFrom3doObject3d(obj *object3d.Object, allTextures []*texture.GafEnt
 	model.calcCenterOfAllSurfaces()
 	// Calculate UV-mapping
 	model.performUvMappingOnAllSurfaces()
+	// Calculate normals
+	model.calcNormalsForAllSurfaces()
 	if obj.ChildObject != nil {
 		model.ChildObject = NewModelFrom3doObject3d(obj.ChildObject, allTextures)
 	}
@@ -56,5 +59,23 @@ func (m *Model) calcCenterOfAllSurfaces() {
 		for i := range surf.CenterCoords {
 			surf.CenterCoords[i] /= float64(len(surf.VertexIndices))
 		}
+	}
+}
+
+func (m *Model) calcNormalsForAllSurfaces() {
+	for _, surf := range m.Primitives {
+		if len(surf.VertexIndices) < 3 {
+			continue
+		}
+		// Take coords 0, 1 and 2.
+		coords0 := geometry.NewVector3FromArr(m.Vertices[surf.VertexIndices[0]])
+		coords1 := geometry.NewVector3FromArr(m.Vertices[surf.VertexIndices[1]])
+		coords2 := geometry.NewVector3FromArr(m.Vertices[surf.VertexIndices[2]])
+		// Move them relative to vertex 1.
+		coords0.Sub(coords1)
+		coords2.Sub(coords1)
+		// Find the cross product.
+		surf.NormalVector = geometry.CrossProduct(&coords0, &coords2)
+		surf.NormalVector.Normalize()
 	}
 }

@@ -63,6 +63,17 @@ func (r *Renderer) drawModelledObject(currObj *ModelledObject, parentWrldMtrx *M
 		r.drawSelectionPrimitive(currWrldMtrx, mdl, mdl.SelectionPrimitive)
 	}
 	for _, p := range mdl.Primitives {
+		// Back-face culling based on normals' directions
+		rotatedNormal := currWrldMtrx.MultiplyByVectorW0(p.NormalVector)
+		// This expression is a dot product of the surface normal and (0; 0.894427; -0.447214) vector.
+		// These "magic numbers" are vector-to-surface coords for oblique projection.
+		// The values are gotten from the equation: z - y/2 = 0;
+		// Y and Z are the values which give the normalized (length of 1.0) vector.
+		if rotatedNormal.Y*0.894427-rotatedNormal.Z*0.447214 > 0 {
+			continue
+		}
+		// back-face culling ended
+
 		if mdl.SelectionPrimitive == p {
 			continue
 		} else if len(p.VertexIndices) == 4 {
@@ -159,13 +170,18 @@ func (r *Renderer) Draw3dTriangleStruct(t *triangle) {
 	projX1, projY1 := obliqueProjectionInt32(t.coords[1][0], t.coords[1][1], t.coords[1][2])
 	projX2, projY2 := obliqueProjectionInt32(t.coords[2][0], t.coords[2][1], t.coords[2][2])
 
+	/*  REDUNDANT while normal-based back-face culling is there. May be more useful if moved before triangulation.
+
 	// Back-face culling based on the on-screen vertex draw order
 	x10, y10 := projX0-projX1, projY0-projY1
 	x12, y12 := projX2-projX1, projY2-projY1
-	// If clockwise, skip this triangle
+	// If clockwise (determinant > 0) or collinear (determinant == 0), skip this triangle
 	if x10*y12-x12*y10 >= 0 {
 		return
 	}
+	// Back-face culling ended
+
+	*/
 
 	if t.texture == nil {
 		r.drawRasterizedFilledTriangle(

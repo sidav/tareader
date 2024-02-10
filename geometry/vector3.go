@@ -33,6 +33,12 @@ func (a *Vector3) Print() {
 	)
 }
 
+func (v *Vector3) Sub(v2 Vector3) {
+	v.X -= v2.X
+	v.Y -= v2.Y
+	v.Z -= v2.Z
+}
+
 func CrossProduct(a, b *Vector3) Vector3 {
 	return Vector3{
 		X: a.Y*b.Z - a.Z*b.Y,
