@@ -10,6 +10,7 @@ import (
 
 // TODO: split into triangles?..
 type ModelSurface struct {
+	Texture               *texture.GafEntry
 	VertexIndices         []int
 	UVCoordinatesPerIndex [][2]float64
 	NormalVector          geometry.Vector3
@@ -17,7 +18,6 @@ type ModelSurface struct {
 	CenterUVCoords        [2]float64
 	IsColored             bool
 	Color                 byte // palette index
-	Texture               *texture.GafEntry
 }
 
 func newModelSurfaceFrom3doPrimitive(p *object3d.Primitive, allTextures []*texture.GafEntry) *ModelSurface {

@@ -5,8 +5,8 @@ import (
 )
 
 type triangle struct {
+	texture           *texture.GafEntry
 	coords            [3][3]float64
 	uvCoords          [3][2]float64
-	texture           *texture.GafEntry
 	colorPaletteIndex byte
 }

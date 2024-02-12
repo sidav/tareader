@@ -10,11 +10,11 @@ import (
 // One model can have multiple ModelledObjects, but a single ModelledObject can belong only to one Model.
 // TODO: rename! There is too much stuff called "object" already.
 type ModelledObject struct {
-	Name           string
 	Matrix         *matrix4x4.Matrix4x4
 	Child          *ModelledObject
 	Sibling        *ModelledObject
 	ModelForObject *Model
+	Name           string
 }
 
 func (mo *ModelledObject) Print(offset int) {

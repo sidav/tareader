@@ -8,13 +8,13 @@ import (
 
 // Non-TA format (floats everywhere) for ease of rendering
 type Model struct {
-	Vertices                              [][3]float64
-	ObjectName                            string
-	XFromParent, YFromParent, ZFromParent float64
-	Primitives                            []*ModelSurface
 	SelectionPrimitive                    *ModelSurface
 	ChildObject                           *Model
 	SiblingObject                         *Model
+	ObjectName                            string
+	Vertices                              [][3]float64
+	Primitives                            []*ModelSurface
+	XFromParent, YFromParent, ZFromParent float64
 }
 
 func NewModelFrom3doObject3d(obj *object3d.Object, allTextures []*texture.GafEntry) *Model {

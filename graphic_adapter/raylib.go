@@ -7,11 +7,11 @@ import (
 )
 
 type RaylibBackend struct {
-	currColor        color.RGBA
-	TargetTexture    rl.RenderTexture2D
 	frameBuffer      []color.RGBA
+	TargetTexture    rl.RenderTexture2D
 	realW, realH     int32
 	renderW, renderH int32
+	currColor        color.RGBA
 }
 
 func (rb *RaylibBackend) Init(w, h int32) {

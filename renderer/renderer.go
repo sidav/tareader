@@ -8,12 +8,14 @@ import (
 
 // Renders OBJECT (the stuff with matrices), not just the model
 type Renderer struct {
-	gAdapter                   graphicadapter.GraphicBackend
-	onScreenOffX, onScreenOffY int32
+	gAdapter graphicadapter.GraphicBackend
+
+	zBuffer [][]float64
 
 	frame int
 
-	zBuffer                                [][]float64
+	onScreenOffX, onScreenOffY int32
+
 	zBufMinX, zBufMaxX, zBufMinY, zBufMaxY int32 // for clearing changed area of the buffer only
 
 	debugMode bool
