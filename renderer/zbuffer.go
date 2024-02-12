@@ -1,20 +1,18 @@
-package raylibrenderer
+package renderer
 
 import "math"
 
-func (r *RaylibRenderer) canDrawOverZBufferAt(x, y int32, depth float64) bool {
+func (r *Renderer) canDrawOverZBufferAt(x, y int32, depth float64) bool {
 	if x < 0 || x >= int32(len(r.zBuffer)) || y < 0 || y >= int32(len(r.zBuffer[0])) {
 		return false
 	}
-	// TODO: consider this variant, it may be better:
-	// const tolerance = 1.0 / 65536.0
-	// return r.zBuffer[x][y]-depth < tolerance
 
-	// Important: it's LEQ, not LESS! Else texturing for models such as coralab breaks.
-	return r.zBuffer[x][y] <= depth
+	// There was <= instead of <, but this variant rendered obsolete since back-face culling was implemented.
+	// (Back-face culling solves see-through texturing of two-side primitives better than this zbuffer stuff did)
+	return r.zBuffer[x][y] < depth
 }
 
-func (r *RaylibRenderer) setZBufferValueAt(val float64, x, y int32) {
+func (r *Renderer) setZBufferValueAt(val float64, x, y int32) {
 	r.zBuffer[x][y] = val
 	if x < r.zBufMinX {
 		r.zBufMinX = x
@@ -30,7 +28,7 @@ func (r *RaylibRenderer) setZBufferValueAt(val float64, x, y int32) {
 	}
 }
 
-func (r *RaylibRenderer) initZBuffer() {
+func (r *Renderer) initZBuffer() {
 	w, h := r.gAdapter.GetRenderResolution()
 	r.zBuffer = make([][]float64, w)
 	for i := range r.zBuffer {
@@ -45,7 +43,7 @@ func (r *RaylibRenderer) initZBuffer() {
 	}
 }
 
-func (r *RaylibRenderer) clearZBuffer() {
+func (r *Renderer) clearZBuffer() {
 	for i := r.zBufMinX; i <= r.zBufMaxX; i++ {
 		for j := r.zBufMinY; j <= r.zBufMaxY; j++ {
 			r.zBuffer[i][j] = -math.MaxFloat64

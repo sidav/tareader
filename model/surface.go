@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"strings"
+	"totala_reader/geometry"
 	"totala_reader/ta_files_read/object3d"
 	"totala_reader/ta_files_read/texture"
 )
@@ -11,6 +12,7 @@ import (
 type ModelSurface struct {
 	VertexIndices         []int
 	UVCoordinatesPerIndex [][2]float64
+	NormalVector          geometry.Vector3
 	CenterCoords          [3]float64
 	CenterUVCoords        [2]float64
 	IsColored             bool

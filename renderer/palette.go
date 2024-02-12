@@ -1,11 +1,12 @@
-package raylibrenderer
+package renderer
 
 import (
 	"fmt"
+
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func (r *RaylibRenderer) ShowPalette() {
+func (r *Renderer) ShowPalette() {
 	w, h := r.gAdapter.GetRenderResolution()
 	colW, colH := w/16, h/16
 	for i := int32(0); i < colW; i++ {
@@ -19,7 +20,7 @@ func (r *RaylibRenderer) ShowPalette() {
 	}
 }
 
-func (r *RaylibRenderer) FillRect(x, y, w, h int32) {
+func (r *Renderer) FillRect(x, y, w, h int32) {
 	for i := x; i < x+w; i++ {
 		for j := y; j < y+h; j++ {
 			r.gAdapter.DrawPoint(i, j)

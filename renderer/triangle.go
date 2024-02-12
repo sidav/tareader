@@ -1,4 +1,4 @@
-package raylibrenderer
+package renderer
 
 import (
 	"math"

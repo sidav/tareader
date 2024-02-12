@@ -8,7 +8,7 @@ import (
 	"time"
 	graphicadapter "totala_reader/graphic_adapter"
 	"totala_reader/model"
-	raylibrenderer "totala_reader/raylib_renderer"
+	"totala_reader/renderer"
 	binaryreader "totala_reader/ta_files_read"
 	"totala_reader/ta_files_read/object3d"
 	"totala_reader/ta_files_read/texture"
@@ -35,17 +35,19 @@ func main() {
 	var scale int32 = 1
 	gAdapter.Init(1366, 768)
 	gAdapter.SetInternalResolution(1366/scale, 768/scale)
-	rend := raylibrenderer.RaylibRenderer{}
+	rend := renderer.Renderer{}
 	rend.Init(gAdapter)
 
 	textures := readAllGAFsFromDirectory("game_files/files_gaf")
 
 	if strings.Contains(openedFile, ".3do") {
 
-		obj := object3d.ReadObjectFromReader(r, 0)
-		fmt.Printf("{\n%s}\n", obj.ToString(0))
+		modelInTAFormat := object3d.ReadObjectFromReader(r, 0)
+		fmt.Printf("{\n%s}\n", modelInTAFormat.ToString(0))
 
-		model := model.NewModelFrom3doObject3d(obj, textures)
+		mdl := model.NewModelFrom3doObject3d(modelInTAFormat, textures)
+		object := model.CreateObjectFromModel(mdl)
+		object.Print(0)
 
 		for i := 0; i < 3; i++ {
 			gAdapter.BeginFrame()
@@ -61,7 +63,7 @@ func main() {
 		for !rl.IsKeyDown(rl.KeyEscape) {
 			start := time.Now()
 			// gAdapter.BeginFrame()
-			rend.DrawModel(model)
+			rend.RenderObject(object)
 			// gAdapter.EndFrame()
 			totalFrames++
 			timeSince := time.Since(start)
@@ -70,6 +72,9 @@ func main() {
 				totalFrames, timeSince, int(time.Second/timeSince),
 				totalDuration/time.Duration(totalFrames), int(time.Second/(totalDuration/time.Duration(totalFrames))))
 			gAdapter.Flush()
+			timeSince = time.Since(start)
+			pp("                         with flush: %v ~> %d FPS",
+				timeSince, int(time.Second/timeSince))
 			// time.Sleep(time.Microsecond)
 			// gAdapter.Clear()
 		}
