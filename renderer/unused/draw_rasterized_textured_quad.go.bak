@@ -1,0 +1,136 @@
+package renderer
+
+import "totala_reader/ta_files_read/texture"
+
+func (r *Renderer) drawRasterizedTexturedQuad(x0, y0, x1, y1, x2, y2, x3, y3 int32, z0, z1, z2, z3, u0, u1, u2, u3, v0, v1, v2, v3 float64, texture *texture.GafEntry) {
+	if y0 > y1 {
+		x0, x1 = x1, x0
+		y0, y1 = y1, y0
+		z0, z1 = z1, z0
+		u0, u1 = u1, u0
+		v0, v1 = v1, v0
+	}
+	if y0 > y2 {
+		x0, x2 = x2, x0
+		y0, y2 = y2, y0
+		z0, z2 = z2, z0
+		u0, u2 = u2, u0
+		v0, v2 = v2, v0
+	}
+	if y0 > y3 {
+		x0, x3 = x3, x0
+		y0, y3 = y3, y0
+		z0, z3 = z3, z0
+		u0, u3 = u3, u0
+		v0, v3 = v3, v0
+	}
+	if y1 > y2 {
+		x1, x2 = x2, x1
+		y1, y2 = y2, y1
+		z1, z2 = z2, z1
+		u1, u2 = u2, u1
+		v1, v2 = v2, v1
+	}
+	if y1 > y3 {
+		x1, x3 = x3, x1
+		y1, y3 = y3, y1
+		z1, z3 = z3, z1
+		u1, u3 = u3, u1
+		v1, v3 = v3, v1
+	}
+	if y2 > y3 {
+		x2, x3 = x3, x2
+		y2, y3 = y3, y2
+		z2, z3 = z3, z2
+		u2, u3 = u3, u2
+		v2, v3 = v3, v2
+	}
+
+	x4 := x0 + (x3-x0)*(y1-y0)/(y3-y0)
+	x5 := x0 + (x3-x0)*(y2-y0)/(y3-y0)
+	z4 := z0 + (z3-z0)*float64(y1-y0)/float64(y3-y0)
+	z5 := z0 + (z3-z0)*float64(y2-y0)/float64(y3-y0)
+	u4 := u0 + (u3-u0)*float64(y1-y0)/float64(y3-y0)
+	u5 := u0 + (u3-u0)*float64(y2-y0)/float64(y3-y0)
+	v4 := v0 + (v3-v0)*float64(y1-y0)/float64(y3-y0)
+	v5 := v0 + (v3-v0)*float64(y2-y0)/float64(y3-y0)
+	if (x5 > x2) == (x4 > x1) { // it's a trapezoid
+		x2, x5 = x5, x2
+		z2, z5 = z5, z2
+		u2, u5 = u5, u2
+		v2, v5 = v5, v2
+	} else { // it's not a trapezoid
+		x4 = x0 + (x2-x0)*(y1-y0)/(y2-y0)
+		x5 = x1 + (x3-x1)*(y2-y1)/(y3-y1)
+		z4 = z0 + (z2-z0)*float64(y1-y0)/float64(y2-y0)
+		z5 = z1 + (z3-z1)*float64(y2-y1)/float64(y3-y1)
+		u4 = u0 + (u2-u0)*float64(y1-y0)/float64(y2-y0)
+		u5 = u1 + (u3-u1)*float64(y2-y1)/float64(y3-y1)
+		v4 = v0 + (v2-v0)*float64(y1-y0)/float64(y2-y0)
+		v5 = v1 + (v3-v1)*float64(y2-y1)/float64(y3-y1)
+	}
+
+	var a, b int32
+	curry := y0
+	var za, zb, ua, ub, va, vb float64
+
+	for curry < y1 {
+		a = x0 + (x4-x0)*(curry-y0)/(y1-y0)
+		b = x0 + (x1-x0)*(curry-y0)/(y1-y0)
+		za = z0 + (z4-z0)*float64(curry-y0)/float64(y1-y0)
+		zb = z0 + (z1-z0)*float64(curry-y0)/float64(y1-y0)
+		ua = u0 + (u4-u0)*float64(curry-y0)/float64(y1-y0)
+		ub = u0 + (u1-u0)*float64(curry-y0)/float64(y1-y0)
+		va = v0 + (v4-v0)*float64(curry-y0)/float64(y1-y0)
+		vb = v0 + (v1-v0)*float64(curry-y0)/float64(y1-y0)
+
+		r.HLineTexturedZBufNoArr(
+			a, b,
+			curry,
+			za, zb,
+			ua, ub,
+			va, vb,
+			texture)
+		curry++
+	}
+
+	for curry < y2 {
+		a = x4 + (x2-x4)*(curry-y1)/(y2-y1)
+		b = x1 + (x5-x1)*(curry-y1)/(y2-y1)
+		za = z4 + (z2-z4)*float64(curry-y1)/float64(y2-y1)
+		zb = z1 + (z5-z1)*float64(curry-y1)/float64(y2-y1)
+		ua = u4 + (u2-u4)*float64(curry-y1)/float64(y2-y1)
+		ub = u1 + (u5-u1)*float64(curry-y1)/float64(y2-y1)
+		va = v4 + (v2-v4)*float64(curry-y1)/float64(y2-y1)
+		vb = v1 + (v5-v1)*float64(curry-y1)/float64(y2-y1)
+
+		r.HLineTexturedZBufNoArr(
+			a, b,
+			curry,
+			za, zb,
+			ua, ub,
+			va, vb,
+			texture)
+		curry++
+	}
+
+	for curry < y3 {
+		a = x2 + (x3-x2)*(curry-y2)/(y3-y2)
+		b = x5 + (x3-x5)*(curry-y2)/(y3-y2)
+		za = z2 + (z3-z2)*float64(curry-y2)/float64(y3-y2)
+		zb = z5 + (z3-z5)*float64(curry-y2)/float64(y3-y2)
+		ua = u2 + (u3-u2)*float64(curry-y2)/float64(y3-y2)
+		ub = u5 + (u3-u5)*float64(curry-y2)/float64(y3-y2)
+		va = v2 + (v3-v2)*float64(curry-y2)/float64(y3-y2)
+		vb = v5 + (v3-v5)*float64(curry-y2)/float64(y3-y2)
+
+		r.HLineTexturedZBufNoArr(
+			a, b,
+			curry,
+			za, zb,
+			ua, ub,
+			va, vb,
+			texture)
+		curry++
+	}
+}

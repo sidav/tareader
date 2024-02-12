@@ -51,7 +51,7 @@ func (r *Renderer) drawRasterizedTexturedTriangle(x0, y0, x1, y1, x2, y2 int32, 
 	for curry < y1 {
 		currx1 = x0 + dx1*(curry-y0)/dy1
 		currx2 = x0 + dx2*(curry-y0)/dy2
-		r.HLineTexturedZBufNoArr(currx1, currx2, curry, currz1, currz2, curru1, curru2, currv1, currv2, texture)
+		r.HLineTexturedZBufRstr(currx1, currx2, curry, currz1, currz2, curru1, curru2, currv1, currv2, texture)
 		currz1 += dz1
 		currz2 += dz2
 		curru1 += du1
@@ -76,7 +76,7 @@ func (r *Renderer) drawRasterizedTexturedTriangle(x0, y0, x1, y1, x2, y2 int32, 
 		currx1 = x1 + dx1*(curry-y1)/dy1
 		currx2 = x0 + dx2*(curry-y0)/dy2
 
-		r.HLineTexturedZBufNoArr(currx1, currx2, curry, currz1, currz2, curru1, curru2, currv1, currv2, texture)
+		r.HLineTexturedZBufRstr(currx1, currx2, curry, currz1, currz2, curru1, curru2, currv1, currv2, texture)
 		currz1 += dz1
 		currz2 += dz2
 		curru1 += du1
@@ -84,5 +84,34 @@ func (r *Renderer) drawRasterizedTexturedTriangle(x0, y0, x1, y1, x2, y2 int32, 
 		currv1 += dv1
 		currv2 += dv2
 		curry++
+	}
+}
+
+func (r *Renderer) HLineTexturedZBufRstr(x1, x2, y int32, z1, z2, u1, u2, v1, v2 float64, texture *texture.GafEntry) {
+	if x1 > x2 {
+		x1, x2 = x2, x1
+		z1, z2 = z2, z1
+		u1, u2 = u2, u1
+		v1, v2 = v2, v1
+	}
+	zinc := (z2 - z1) / float64(x2-x1)
+	uinc := (u2 - u1) / float64(x2-x1)
+	vinc := (v2 - v1) / float64(x2-x1)
+
+	// Real texture coord for max U and V.
+	// (-0.5) here because it's -1 (as max coord can't be equal to size) added with +0.5 (for texture subpixel alignment)
+	maxUReal := float64(len(texture.Frames[0].Pixels)) - 0.5
+	maxVReal := float64(len(texture.Frames[0].Pixels[0])) - 0.5
+	for x := x1; x <= x2; x++ {
+		if r.canDrawOverZBufferAt(x, y, z1) {
+			uCoord := int(maxUReal * u1)
+			vCoord := int(maxVReal * v1)
+			r.gAdapter.SetColor(getTaPaletteColor(texture.Frames[0].Pixels[uCoord][vCoord]))
+			r.setZBufferValueAt(z1, x, y)
+			r.gAdapter.DrawPoint(x, y)
+		}
+		z1 += zinc
+		u1 += uinc
+		v1 += vinc
 	}
 }
