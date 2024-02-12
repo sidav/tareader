@@ -166,9 +166,9 @@ func (r *Renderer) drawNonquadPrimitive(currWrldMtrx *Matrix4x4, mdl *Model, pri
 }
 
 func (r *Renderer) Draw3dTriangleStruct(t *triangle) {
-	projX0, projY0 := obliqueProjectionInt32(t.coords[0][0], t.coords[0][1], t.coords[0][2])
-	projX1, projY1 := obliqueProjectionInt32(t.coords[1][0], t.coords[1][1], t.coords[1][2])
-	projX2, projY2 := obliqueProjectionInt32(t.coords[2][0], t.coords[2][1], t.coords[2][2])
+	projX0, projY0 := obliqueProjectionInt32Arr(t.coords[0])
+	projX1, projY1 := obliqueProjectionInt32Arr(t.coords[1])
+	projX2, projY2 := obliqueProjectionInt32Arr(t.coords[2])
 
 	/*  REDUNDANT while normal-based back-face culling is there. May be more useful if moved before triangulation.
 
