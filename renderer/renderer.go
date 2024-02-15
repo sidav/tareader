@@ -80,7 +80,7 @@ func (r *Renderer) drawModelledObject(currObj *ModelledObject, parentWrldMtrx *M
 			continue
 		} else if len(p.VertexIndices) == 4 {
 			r.drawQuadPrimitive(currWrldMtrx, mdl, p)
-		} else {
+		} else if len(p.VertexIndices) > 2 {
 			r.drawNonquadPrimitive(currWrldMtrx, mdl, p)
 		}
 	}
@@ -140,10 +140,6 @@ func (r *Renderer) drawQuadPrimitive(currWrldMtrx *Matrix4x4, mdl *Model, prim *
 }
 
 func (r *Renderer) drawNonquadPrimitive(currWrldMtrx *Matrix4x4, mdl *Model, prim *ModelSurface) {
-	if len(prim.VertexIndices) < 3 {
-		return
-	}
-
 	zeroCrds := currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[0]])
 	for i := 2; i < len(prim.VertexIndices); i++ {
 		newTriangle := &triangle{
@@ -187,35 +183,39 @@ func (r *Renderer) Draw3dTriangleStruct(t *triangle) {
 
 	if t.texture == nil {
 		r.drawRasterizedFilledTriangle(
-			projX0+r.onScreenOffX,
-			projY0+r.onScreenOffY,
-			projX1+r.onScreenOffX,
-			projY1+r.onScreenOffY,
-			projX2+r.onScreenOffX,
-			projY2+r.onScreenOffY,
-			t.coords[0][1],
-			t.coords[1][1],
-			t.coords[2][1],
-			t.colorPaletteIndex,
+			&onScreenTriangle{
+				x0:    projX0 + r.onScreenOffX,
+				y0:    projY0 + r.onScreenOffY,
+				x1:    projX1 + r.onScreenOffX,
+				y1:    projY1 + r.onScreenOffY,
+				x2:    projX2 + r.onScreenOffX,
+				y2:    projY2 + r.onScreenOffY,
+				z0:    t.coords[0][1],
+				z1:    t.coords[1][1],
+				z2:    t.coords[2][1],
+				color: t.colorPaletteIndex,
+			},
 		)
 	} else {
 		r.drawRasterizedTexturedTriangle(
-			projX0+r.onScreenOffX,
-			projY0+r.onScreenOffY,
-			projX1+r.onScreenOffX,
-			projY1+r.onScreenOffY,
-			projX2+r.onScreenOffX,
-			projY2+r.onScreenOffY,
-			t.coords[0][1],
-			t.coords[1][1],
-			t.coords[2][1],
-			t.uvCoords[0][0],
-			t.uvCoords[1][0],
-			t.uvCoords[2][0],
-			t.uvCoords[0][1],
-			t.uvCoords[1][1],
-			t.uvCoords[2][1],
-			t.texture,
+			&onScreenTriangle{
+				x0:      projX0 + r.onScreenOffX,
+				y0:      projY0 + r.onScreenOffY,
+				x1:      projX1 + r.onScreenOffX,
+				y1:      projY1 + r.onScreenOffY,
+				x2:      projX2 + r.onScreenOffX,
+				y2:      projY2 + r.onScreenOffY,
+				z0:      t.coords[0][1],
+				z1:      t.coords[1][1],
+				z2:      t.coords[2][1],
+				u0:      t.uvCoords[0][0],
+				u1:      t.uvCoords[1][0],
+				u2:      t.uvCoords[2][0],
+				v0:      t.uvCoords[0][1],
+				v1:      t.uvCoords[1][1],
+				v2:      t.uvCoords[2][1],
+				texture: t.texture,
+			},
 		)
 	}
 }

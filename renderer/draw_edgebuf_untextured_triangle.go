@@ -1,5 +1,22 @@
 package renderer
 
+func (r *Renderer) drawEdgebufFilledTriangle(ost *onScreenTriangle) {
+	ost.reorderCoordsYAscSkipUv()
+
+	r.bufferEdge(ost.x0, ost.y0, ost.x1, ost.y1, ost.z0, ost.z1)
+	r.bufferEdge(ost.x1, ost.y1, ost.x2, ost.y2, ost.z1, ost.z2)
+	r.bufferEdge(ost.x2, ost.y2, ost.x0, ost.y0, ost.z2, ost.z0)
+	if ost.y0 < 0 {
+		ost.y0 = 0
+	}
+	if ost.y2 >= int32(len(xedge)) {
+		ost.y2 = int32(len(xedge) - 1)
+	}
+	for y := ost.y0; y <= ost.y2; y++ {
+		r.HLineZBuf(int32(xedge[y][0]), int32(xedge[y][1]), y, ost.color)
+	}
+}
+
 func (r *Renderer) bufferEdge(x1, y1, x2, y2 int32, z1, z2 float64) {
 	side := 0
 	if y1 >= y2 {
@@ -23,37 +40,6 @@ func (r *Renderer) bufferEdge(x1, y1, x2, y2 int32, z1, z2 float64) {
 		}
 		currX += xslope
 		currZ += zslope
-	}
-}
-
-func (r *Renderer) drawEdgebufFilledTriangle(x0, y0, x1, y1, x2, y2 int32, z0, z1, z2 float64, color byte) {
-	if y0 > y1 {
-		x0, x1 = x1, x0
-		y0, y1 = y1, y0
-		z0, z1 = z1, z0
-	}
-	if y0 > y2 {
-		x0, x2 = x2, x0
-		y0, y2 = y2, y0
-		z0, z2 = z2, z0
-	}
-	if y1 > y2 {
-		x1, x2 = x2, x1
-		y1, y2 = y2, y1
-		z1, z2 = z2, z1
-	}
-
-	r.bufferEdge(x0, y0, x1, y1, z0, z1)
-	r.bufferEdge(x1, y1, x2, y2, z1, z2)
-	r.bufferEdge(x2, y2, x0, y0, z2, z0)
-	if y0 < 0 {
-		y0 = 0
-	}
-	if y2 >= int32(len(xedge)) {
-		y2 = int32(len(xedge) - 1)
-	}
-	for y := y0; y <= y2; y++ {
-		r.HLineZBuf(int32(xedge[y][0]), int32(xedge[y][1]), y, color)
 	}
 }
 

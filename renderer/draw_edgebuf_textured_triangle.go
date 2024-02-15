@@ -11,6 +11,22 @@ var zedge [1080][2]float64
 var uedge [1080][2]float64
 var vedge [1080][2]float64
 
+func (r *Renderer) drawEdgebufTexturedTriangle(ost *onScreenTriangle) {
+	ost.reorderCoordsYAsc()
+	r.bufferEdgeTextured(ost.x0, ost.y0, ost.x1, ost.y1, ost.z0, ost.z1, ost.u0, ost.u1, ost.v0, ost.v1)
+	r.bufferEdgeTextured(ost.x1, ost.y1, ost.x2, ost.y2, ost.z1, ost.z2, ost.u1, ost.u2, ost.v1, ost.v2)
+	r.bufferEdgeTextured(ost.x2, ost.y2, ost.x0, ost.y0, ost.z2, ost.z0, ost.u2, ost.u0, ost.v2, ost.v0)
+	if ost.y0 < 0 {
+		ost.y0 = 0
+	}
+	if ost.y2 >= int32(len(xedge)) {
+		ost.y2 = int32(len(xedge) - 1)
+	}
+	for y := ost.y0; y <= ost.y2; y++ {
+		r.HLineTexturedZBuf(int32(xedge[y][0]), int32(xedge[y][1]), y, ost.texture)
+	}
+}
+
 func (r *Renderer) bufferEdgeTextured(x1, y1, x2, y2 int32, z1, z2, u1, u2, v1, v2 float64) {
 	side := 0
 	if y1 >= y2 {
@@ -47,42 +63,6 @@ func (r *Renderer) bufferEdgeTextured(x1, y1, x2, y2 int32, z1, z2, u1, u2, v1, 
 		currZ += zslope
 		currU += uslope
 		currV += vslope
-	}
-}
-
-func (r *Renderer) drawEdgebufTexturedTriangle(x0, y0, x1, y1, x2, y2 int32, z0, z1, z2, u0, u1, u2, v0, v1, v2 float64, texture *texture.GafEntry) {
-	if y0 > y1 {
-		x0, x1 = x1, x0
-		y0, y1 = y1, y0
-		z0, z1 = z1, z0
-		u0, u1 = u1, u0
-		v0, v1 = v1, v0
-	}
-	if y0 > y2 {
-		x0, x2 = x2, x0
-		y0, y2 = y2, y0
-		z0, z2 = z2, z0
-		u0, u2 = u2, u0
-		v0, v2 = v2, v0
-	}
-	if y1 > y2 {
-		x1, x2 = x2, x1
-		y1, y2 = y2, y1
-		z1, z2 = z2, z1
-		u1, u2 = u2, u1
-		v1, v2 = v2, v1
-	}
-	r.bufferEdgeTextured(x0, y0, x1, y1, z0, z1, u0, u1, v0, v1)
-	r.bufferEdgeTextured(x1, y1, x2, y2, z1, z2, u1, u2, v1, v2)
-	r.bufferEdgeTextured(x2, y2, x0, y0, z2, z0, u2, u0, v2, v0)
-	if y0 < 0 {
-		y0 = 0
-	}
-	if y2 >= int32(len(xedge)) {
-		y2 = int32(len(xedge) - 1)
-	}
-	for y := y0; y <= y2; y++ {
-		r.HLineTexturedZBuf(int32(xedge[y][0]), int32(xedge[y][1]), y, texture)
 	}
 }
 
