@@ -18,48 +18,57 @@ func ReadCobFileFromReader(r *tafilesread.Reader) {
 	offsetToRawCode := r.ReadIntFromBytesArray(0, 36)
 	// unknown3 := r.ReadIntFromBytesArray(0, 40)
 
-	print("Descriptor:\n  Version: %d, SC %d, PC %d,\n", version, scriptsCount, piecesCount)
-	print("  CI offset %08X, SI offset %08X,\nPiece offset %08X, code offset %08X\n",
+	print(
+		"Descriptor:\n"+ // <-- just to ease code alignment
+			"  Version: %d\n"+
+			"  Total scripts  %-8d   Total pieces     %-8d\n"+
+			"  SCI offset     %08X   SNI offset       %08X\n"+
+			"  Pieces offset  %08X   Raw code offset  %08X\n",
+		version, scriptsCount, piecesCount,
 		offsetToScriptCodeIndices,
 		offsetToScriptNamesIndices,
 		offsetToPieceNamesIndices,
 		offsetToRawCode,
 	)
 
+	script := &CobScript{}
 	print("Pieces: \n")
 	for pNum := 0; pNum < piecesCount; pNum++ {
 		pieceNameOffset := r.ReadIntFromBytesArray(offsetToPieceNamesIndices, pNum*4)
 		pieceName := r.ReadNullTermStringFromBytesArray(pieceNameOffset, 0)
+		script.Pieces = append(script.Pieces, pieceName)
 		print("  %s\n", pieceName)
 	}
 
-	print("Scripts: \n")
+	print("Reading scripts descriptors: \n")
 	for sNum := 0; sNum < scriptsCount; sNum++ {
-		script := &CobScript{}
 		scriptNameOffset := r.ReadIntFromBytesArray(offsetToScriptNamesIndices, sNum*4)
-		script.Name = r.ReadNullTermStringFromBytesArray(scriptNameOffset, 0)
+		scriptName := r.ReadNullTermStringFromBytesArray(scriptNameOffset, 0)
 		// Offset to a script is calculated by: OffsetToScriptCode + (ScriptCodeIndexArray[ScriptNumber] * 4)
 		// ScriptNumber is given in int32s, so the final formula is OffsetToScriptCode + (ScriptCodeIndexArray[ScriptNumber*4] * 4)
-		currentScriptCodeOffset := r.ReadIntFromBytesArray(offsetToScriptCodeIndices, sNum*4) * 4
+		currentScriptCodeOffset := r.ReadIntFromBytesArray(offsetToScriptCodeIndices, sNum*4)
 
-		print("  %-12s at 0x%08X (local index 0x%08X); ", script.Name,
-			offsetToRawCode+currentScriptCodeOffset, currentScriptCodeOffset)
+		print("  %-12s at 0x%08X (local index 0x%08X); \n", scriptName,
+			offsetToRawCode+currentScriptCodeOffset*4, currentScriptCodeOffset*4)
 
-		script.RawCode = readScriptFromOpenedCOB(r, offsetToRawCode, currentScriptCodeOffset)
-		script.PrintHumanReadableDisassembly()
+		script.ProcedureNames = append(script.ProcedureNames, scriptName)
+		script.ProcedureAddresses = append(script.ProcedureAddresses, int32(currentScriptCodeOffset))
 	}
+
+	print("Reading raw code: \n")
+	script.RawCode = readRawCodeFromCOB(r, offsetToRawCode, offsetToScriptCodeIndices)
+	script.PrintHumanReadableDisassembly()
 }
 
-func readScriptFromOpenedCOB(r *tafilesread.Reader, offsetToRawCode, currentScriptCodeOffset int) []int32 {
+func readRawCodeFromCOB(r *tafilesread.Reader, offsetToRawCode, readUntilAddress int) []int32 {
 	var rawCode []int32
 	// Reading the script itself:
-	currWord := -1
+	var currWord int
 	currInstrOffset := 0
-	for currWord != CI_RET {
-		currWord = r.ReadIntFromBytesArray(offsetToRawCode+currentScriptCodeOffset, currInstrOffset)
+	for offsetToRawCode+currInstrOffset < readUntilAddress {
+		currWord = r.ReadIntFromBytesArray(offsetToRawCode, currInstrOffset)
 		rawCode = append(rawCode, int32(currWord))
 		currInstrOffset += 4
 	}
-	print("RET found at instr offset %d (total %d words).\n", currInstrOffset, currInstrOffset/4)
 	return rawCode
 }

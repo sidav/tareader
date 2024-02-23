@@ -3,10 +3,12 @@ package scripts
 // All the instruction opcodes for the COB script machine.
 const (
 	// no args
+	CI_SLEEP       = 0x10013000
 	CI_STACK_ALLOC = 0x10022000
 	CI_SUB         = 0x10032000
 	CI_MUL         = 0x10033000
 	CI_OR          = 0x10036000
+	CI_RAND        = 0x10041000
 	CI_CMP_LESS    = 0x10051000
 	CI_CMP_LEQ     = 0x10052000
 	CI_CMP_EQ      = 0x10055000
@@ -18,12 +20,10 @@ const (
 	CI_SET_VALUE   = 0x10082000
 
 	// 1 arg
-	CI_SLEEP               = 0x10013000
 	CI_PUSH_CONST          = 0x10021001
 	CI_PUSH_VAR            = 0x10021002
 	CI_POP_VAR             = 0x10023002
 	CI_EMIT_SFX_FROM_PIECE = 0x1000F000
-	CI_RAND                = 0x10041000
 	CI_GET_UNIT_VAL        = 0x10042000
 	CI_JMP                 = 0x10064000
 	CI_JMP_IF_FALSE        = 0x10066000

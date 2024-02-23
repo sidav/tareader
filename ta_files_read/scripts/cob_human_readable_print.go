@@ -11,7 +11,12 @@ func (cs *CobScript) PrintHumanReadableDisassembly() {
 	// Debug only:
 	var unknownOpcodeStrings []string
 
-	for instruction != CI_RET {
+	for ip < len(cs.RawCode) {
+		for i := range cs.ProcedureAddresses {
+			if cs.ProcedureAddresses[i] == int32(ip) {
+				print("  --- begin proc %s\n", cs.ProcedureNames[i])
+			}
+		}
 		ipIncrement = 1
 		instruction = cs.RawCode[ip]
 
@@ -132,7 +137,7 @@ func (cs *CobScript) PrintHumanReadableDisassembly() {
 			unknownOpcodeStrings = addStringToArrUnlessPresent(currentText, unknownOpcodeStrings)
 		}
 
-		print("    %03d: "+currentText+"\n", ip)
+		print("  %03d: "+currentText+"\n", ip)
 		ip += ipIncrement
 	}
 	if len(unknownOpcodeStrings) > 0 {

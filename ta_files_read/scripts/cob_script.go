@@ -1,6 +1,8 @@
 package scripts
 
 type CobScript struct {
-	Name    string
-	RawCode []int32
+	Pieces             []string
+	ProcedureNames     []string
+	ProcedureAddresses []int32
+	RawCode            []int32
 }
