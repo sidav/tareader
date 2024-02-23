@@ -1,4 +1,11 @@
 *.3do
 *.gaf
 *.GAF
+*.cob
+*.COB
+*.bos
+*.BOS
+*.h
+*.H
+*.BAT
 *.pprof
