@@ -11,6 +11,7 @@ import (
 	"totala_reader/renderer"
 	binaryreader "totala_reader/ta_files_read"
 	"totala_reader/ta_files_read/object3d"
+	"totala_reader/ta_files_read/scripts"
 	"totala_reader/ta_files_read/texture"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -89,6 +90,10 @@ func main() {
 			fmt.Printf("%s\n", ge.Name)
 			time.Sleep(1 * time.Second / 2)
 		}
+	}
+	if strings.Contains(strings.ToLower(openedFile), ".cob") {
+		fmt.Printf("Opening script %s\n", openedFile)
+		scripts.ReadCobFileFromReader(r)
 	}
 }
 
