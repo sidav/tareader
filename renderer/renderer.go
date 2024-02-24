@@ -117,105 +117,74 @@ func (r *Renderer) drawSelectionPrimitive(objWorldMatrix *Matrix4x4, obj *Model,
 // So we need separate triangulation (quad is split to 4 triangles, each has quad's center as a vertex)
 func (r *Renderer) drawQuadPrimitive(currWrldMtrx *Matrix4x4, mdl *Model, prim *ModelSurface) {
 	zeroCrds := currWrldMtrx.MultiplyByArr3Vector(prim.CenterCoords)
+	zeroOsx, zeroOsy := obliqueProjectionInt32Arr(zeroCrds)
+	ost := &onScreenTriangle{}
 	for i := 0; i < len(prim.VertexIndices); i++ {
-		newTriangle := &triangle{
-			coords: [3][3]float64{
-				zeroCrds,
-				currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[i]]),
-				currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[(i+1)%4]]),
-			},
-		}
+		bIndex := (i + 1) % 4
+		rotatedCoordsA := currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[i]])
+		rotatedCoordsB := currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[bIndex]])
+
+		osxa, osya := obliqueProjectionInt32Arr(rotatedCoordsA)
+		osxb, osyb := obliqueProjectionInt32Arr(rotatedCoordsB)
+
+		ost.x0 = zeroOsx + r.onScreenOffX
+		ost.y0 = zeroOsy + r.onScreenOffY
+		ost.z0 = zeroCrds[1]
+		ost.x1 = osxa + r.onScreenOffX
+		ost.y1 = osya + r.onScreenOffY
+		ost.z1 = rotatedCoordsA[1]
+		ost.x2 = osxb + r.onScreenOffX
+		ost.y2 = osyb + r.onScreenOffY
+		ost.z2 = rotatedCoordsB[1]
+
 		if len(prim.UVCoordinatesPerIndex) > 0 {
-			newTriangle.uvCoords = [3][2]float64{
-				prim.CenterUVCoords,
-				prim.UVCoordinatesPerIndex[i],
-				prim.UVCoordinatesPerIndex[(i+1)%4],
-			}
-			newTriangle.texture = prim.Texture
+			ost.u0 = prim.CenterUVCoords[0]
+			ost.u1 = prim.UVCoordinatesPerIndex[i][0]
+			ost.u2 = prim.UVCoordinatesPerIndex[bIndex][0]
+			ost.v0 = prim.CenterUVCoords[1]
+			ost.v1 = prim.UVCoordinatesPerIndex[i][1]
+			ost.v2 = prim.UVCoordinatesPerIndex[bIndex][1]
+			ost.texture = prim.Texture
+			r.drawRasterizedTexturedTriangle(ost)
 		} else {
-			newTriangle.colorPaletteIndex = prim.Color
+			ost.color = prim.Color
+			r.drawRasterizedFilledTriangle(ost)
 		}
-		r.Draw3dTriangleStruct(newTriangle)
 	}
 }
 
 func (r *Renderer) drawNonquadPrimitive(currWrldMtrx *Matrix4x4, mdl *Model, prim *ModelSurface) {
 	zeroCrds := currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[0]])
+	zeroOsx, zeroOsy := obliqueProjectionInt32Arr(zeroCrds)
+	ost := &onScreenTriangle{}
 	for i := 2; i < len(prim.VertexIndices); i++ {
-		newTriangle := &triangle{
-			coords: [3][3]float64{
-				zeroCrds,
-				currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[i-1]]),
-				currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[i]]),
-			},
-		}
+		rotatedCoordsA := currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[i-1]])
+		rotatedCoordsB := currWrldMtrx.MultiplyByArr3Vector(mdl.Vertices[prim.VertexIndices[i]])
+		osxa, osya := obliqueProjectionInt32Arr(rotatedCoordsA)
+		osxb, osyb := obliqueProjectionInt32Arr(rotatedCoordsB)
+
+		ost.x0 = zeroOsx + r.onScreenOffX
+		ost.y0 = zeroOsy + r.onScreenOffY
+		ost.z0 = zeroCrds[1]
+		ost.x1 = osxa + r.onScreenOffX
+		ost.y1 = osya + r.onScreenOffY
+		ost.z1 = rotatedCoordsA[1]
+		ost.x2 = osxb + r.onScreenOffX
+		ost.y2 = osyb + r.onScreenOffY
+		ost.z2 = rotatedCoordsB[1]
+
 		if len(prim.UVCoordinatesPerIndex) > 0 {
-			newTriangle.uvCoords = [3][2]float64{
-				prim.UVCoordinatesPerIndex[0],
-				prim.UVCoordinatesPerIndex[i-1],
-				prim.UVCoordinatesPerIndex[i],
-			}
-			newTriangle.texture = prim.Texture
+			ost.u0 = prim.CenterUVCoords[0]
+			ost.u1 = prim.UVCoordinatesPerIndex[i-1][0]
+			ost.u2 = prim.UVCoordinatesPerIndex[i][0]
+			ost.v0 = prim.CenterUVCoords[1]
+			ost.v1 = prim.UVCoordinatesPerIndex[i-1][1]
+			ost.v2 = prim.UVCoordinatesPerIndex[i][1]
+			ost.texture = prim.Texture
+			r.drawRasterizedTexturedTriangle(ost)
 		} else {
-			newTriangle.colorPaletteIndex = prim.Color
+			ost.color = prim.Color
+			r.drawRasterizedFilledTriangle(ost)
 		}
-		r.Draw3dTriangleStruct(newTriangle)
-	}
-}
-
-func (r *Renderer) Draw3dTriangleStruct(t *triangle) {
-	projX0, projY0 := obliqueProjectionInt32Arr(t.coords[0])
-	projX1, projY1 := obliqueProjectionInt32Arr(t.coords[1])
-	projX2, projY2 := obliqueProjectionInt32Arr(t.coords[2])
-
-	/*  REDUNDANT while normal-based back-face culling is there. May be more useful if moved before triangulation.
-
-	// Back-face culling based on the on-screen vertex draw order
-	x10, y10 := projX0-projX1, projY0-projY1
-	x12, y12 := projX2-projX1, projY2-projY1
-	// If clockwise (determinant > 0) or collinear (determinant == 0), skip this triangle
-	if x10*y12-x12*y10 >= 0 {
-		return
-	}
-	// Back-face culling ended
-
-	*/
-
-	if t.texture == nil {
-		r.drawRasterizedFilledTriangle(
-			&onScreenTriangle{
-				x0:    projX0 + r.onScreenOffX,
-				y0:    projY0 + r.onScreenOffY,
-				x1:    projX1 + r.onScreenOffX,
-				y1:    projY1 + r.onScreenOffY,
-				x2:    projX2 + r.onScreenOffX,
-				y2:    projY2 + r.onScreenOffY,
-				z0:    t.coords[0][1],
-				z1:    t.coords[1][1],
-				z2:    t.coords[2][1],
-				color: t.colorPaletteIndex,
-			},
-		)
-	} else {
-		r.drawRasterizedTexturedTriangle(
-			&onScreenTriangle{
-				x0:      projX0 + r.onScreenOffX,
-				y0:      projY0 + r.onScreenOffY,
-				x1:      projX1 + r.onScreenOffX,
-				y1:      projY1 + r.onScreenOffY,
-				x2:      projX2 + r.onScreenOffX,
-				y2:      projY2 + r.onScreenOffY,
-				z0:      t.coords[0][1],
-				z1:      t.coords[1][1],
-				z2:      t.coords[2][1],
-				u0:      t.uvCoords[0][0],
-				u1:      t.uvCoords[1][0],
-				u2:      t.uvCoords[2][0],
-				v0:      t.uvCoords[0][1],
-				v1:      t.uvCoords[1][1],
-				v2:      t.uvCoords[2][1],
-				texture: t.texture,
-			},
-		)
 	}
 }
