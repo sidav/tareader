@@ -34,6 +34,8 @@ func (cs *CobScript) PrintHumanReadableDisassembly() {
 			disasmText = "ALLOC LOCAL VAR"
 		case CI_GET_VALUE:
 			disasmText = "GET VALUE [port]"
+		case CI_GET_VALUE_WITH_ARGS:
+			disasmText = "? GET VALUE WITH ARGS [arg1 arg2 arg3 arg4 port] ?"
 		case CI_SET_VALUE:
 			disasmText = "SET VALUE [val port]"
 		case CI_CMP_LESS:
@@ -44,18 +46,34 @@ func (cs *CobScript) PrintHumanReadableDisassembly() {
 			disasmText = "COMPARE EQUAL"
 		case CI_CMP_NEQ:
 			disasmText = "COMPARE NOT EQUAL"
-		case CI_OR:
+		case CI_CMP_GREATER:
+			disasmText = "COMPARE GREATER"
+		case CI_CMP_GEQ:
+			disasmText = "COMPARE GREATER OR EQUAL"
+		case CI_BITWISE_OR:
 			disasmText = "BITWISE OR"
 		case CI_NEG:
 			disasmText = "BITWISE NEGATE"
+		case CI_LOGICAL_OR:
+			disasmText = "LOGICAL OR"
+		case CI_LOGICAL_XOR:
+			disasmText = "LOGICAL XOR"
+		case CI_LOGICAL_AND:
+			disasmText = "LOGICAL AND"
 		case CI_SIGNAL:
-			disasmText = "? SIGNAL [signal] ?"
+			// Destroy all the threads with passing mask.
+			disasmText = "SIGNAL [signal]"
 		case CI_SETSIGMASK:
-			disasmText = "? SET SIGNAL MASK [mask] ?"
+			// Set a mask for thread-killing routine (SIGNAL opcode)
+			disasmText = "SET SIGNAL MASK [mask]"
+		case CI_ADD:
+			disasmText = "ADD [A B]"
 		case CI_SUB:
 			disasmText = "SUB [A B]"
 		case CI_MUL:
 			disasmText = "MULTIPLY [A B]"
+		case CI_DIV:
+			disasmText = "DIVIDE [A B]"
 		case CI_RAND:
 			disasmText = "RANDOM"
 		case CI_SLEEP:
@@ -127,19 +145,26 @@ func (cs *CobScript) PrintHumanReadableDisassembly() {
 		case CI_TURN_NOW:
 			disasmText = sprint("TURN NOW OBJECT #%02d BY AXIS #%d [angle]", nextval1, nextval2)
 			ipIncrement = 3
+		case CI_WAIT_FOR_TURN:
+			disasmText = sprint("WAIT FOR TURN OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
+			ipIncrement = 3
 		case CI_WAIT_FOR_MOVE:
 			disasmText = sprint("WAIT FOR MOVE OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
 			ipIncrement = 3
 		case CI_START_SCRIPT:
-			disasmText = sprint("? START SCRIPT #%d WITH %d PARAMS ?", nextval1, nextval2)
+			sName := cs.ProcedureNames[nextval1]
+			// IMPORTANT: new threads should be created with the current (i.e. inherited) signal mask.
+			disasmText = sprint("NEW THREAD FOR SCRIPT #%d ('%s') WITH %d PARAMS FROM STACK", nextval1, sName, nextval2)
 			ipIncrement = 3
 		case CI_CALL_SCRIPT:
-			disasmText = sprint("? CALL SCRIPT #%d WITH %d PARAMS ?", nextval1, nextval2)
+			sName := cs.ProcedureNames[nextval1]
+			disasmText = sprint("CALL SCRIPT #%d ('%s') WITH %d PARAMS FROM STACK", nextval1, sName, nextval2)
 			ipIncrement = 3
 
 		// Unimplemented stuff:
 		default:
-			disasmText = sprint("<0x%08X (%s)>", opcode, sprintInt32AsBigEndianHex(opcode))
+			// disasmText = sprint("<0x%08X (%s)>", opcode, sprintInt32AsBigEndianHex(opcode))
+			disasmText = sprint("< 0x%08X >", opcode)
 			unknownOpcodeStrings = addStringToArrUnlessPresent(disasmText, unknownOpcodeStrings)
 		}
 
