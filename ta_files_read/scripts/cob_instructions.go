@@ -3,28 +3,28 @@ package scripts
 // All the instruction opcodes for the COB script machine.
 const (
 	// no args
-	CI_SLEEP       = 0x10013000
-	CI_STACK_ALLOC = 0x10022000
-	CI_SUB         = 0x10032000
-	CI_MUL         = 0x10033000
-	CI_OR          = 0x10036000
-	CI_RAND        = 0x10041000
-	CI_CMP_LESS    = 0x10051000
-	CI_CMP_LEQ     = 0x10052000
-	CI_CMP_EQ      = 0x10055000
-	CI_CMP_NEQ     = 0x10056000
-	CI_NOT         = 0x1005A000
-	CI_SETSIGMASK  = 0x10068000
-	CI_SIGNAL      = 0x10067000
-	CI_RET         = 0x10065000
-	CI_SET_VALUE   = 0x10082000
+	CI_SLEEP           = 0x10013000
+	CI_ALLOC_LOCAL_VAR = 0x10022000
+	CI_SUB             = 0x10032000
+	CI_MUL             = 0x10033000
+	CI_OR              = 0x10036000
+	CI_RAND            = 0x10041000
+	CI_CMP_LESS        = 0x10051000
+	CI_CMP_LEQ         = 0x10052000
+	CI_CMP_EQ          = 0x10055000
+	CI_CMP_NEQ         = 0x10056000
+	CI_NEG             = 0x1005A000
+	CI_SETSIGMASK      = 0x10068000
+	CI_SIGNAL          = 0x10067000
+	CI_RETURN          = 0x10065000
+	CI_SET_VALUE       = 0x10082000
 
 	// 1 arg
 	CI_PUSH_CONST          = 0x10021001
-	CI_PUSH_VAR            = 0x10021002
-	CI_POP_VAR             = 0x10023002
+	CI_PUSH_LOCAL_VAR      = 0x10021002
+	CI_POP_LOCAL_VAR       = 0x10023002
 	CI_EMIT_SFX_FROM_PIECE = 0x1000F000
-	CI_GET_UNIT_VAL        = 0x10042000
+	CI_GET_VALUE           = 0x10042000
 	CI_JMP                 = 0x10064000
 	CI_JMP_IF_FALSE        = 0x10066000
 	CI_EXPLODE_PIECE       = 0x10071000
