@@ -1,6 +1,9 @@
 package scripts
 
-import "strings"
+import (
+	"strings"
+	"totala_reader/ta_files_read/scripts/opcodes"
+)
 
 func (cs *CobScript) PrintHumanReadableDisassembly() {
 	ip := 0
@@ -28,135 +31,135 @@ func (cs *CobScript) PrintHumanReadableDisassembly() {
 
 		switch opcode {
 		// No arguments
-		case CI_RETURN:
+		case opcodes.CI_RETURN:
 			disasmText = "RETURN"
-		case CI_ALLOC_LOCAL_VAR:
+		case opcodes.CI_ALLOC_LOCAL_VAR:
 			disasmText = "ALLOC LOCAL VAR"
-		case CI_GET_VALUE:
+		case opcodes.CI_GET_VALUE:
 			disasmText = "GET VALUE [port]"
-		case CI_GET_VALUE_WITH_ARGS:
+		case opcodes.CI_GET_VALUE_WITH_ARGS:
 			disasmText = "? GET VALUE WITH ARGS [arg1 arg2 arg3 arg4 port] ?"
-		case CI_SET_VALUE:
+		case opcodes.CI_SET_VALUE:
 			disasmText = "SET VALUE [val port]"
-		case CI_CMP_LESS:
+		case opcodes.CI_CMP_LESS:
 			disasmText = "COMPARE LESS"
-		case CI_CMP_LEQ:
+		case opcodes.CI_CMP_LEQ:
 			disasmText = "COMPARE LESS OR EQUAL"
-		case CI_CMP_EQ:
+		case opcodes.CI_CMP_EQ:
 			disasmText = "COMPARE EQUAL"
-		case CI_CMP_NEQ:
+		case opcodes.CI_CMP_NEQ:
 			disasmText = "COMPARE NOT EQUAL"
-		case CI_CMP_GREATER:
+		case opcodes.CI_CMP_GREATER:
 			disasmText = "COMPARE GREATER"
-		case CI_CMP_GEQ:
+		case opcodes.CI_CMP_GEQ:
 			disasmText = "COMPARE GREATER OR EQUAL"
-		case CI_BITWISE_OR:
+		case opcodes.CI_BITWISE_OR:
 			disasmText = "BITWISE OR"
-		case CI_NEG:
+		case opcodes.CI_NEG:
 			disasmText = "BITWISE NEGATE"
-		case CI_LOGICAL_OR:
+		case opcodes.CI_LOGICAL_OR:
 			disasmText = "LOGICAL OR"
-		case CI_LOGICAL_XOR:
+		case opcodes.CI_LOGICAL_XOR:
 			disasmText = "LOGICAL XOR"
-		case CI_LOGICAL_AND:
+		case opcodes.CI_LOGICAL_AND:
 			disasmText = "LOGICAL AND"
-		case CI_SIGNAL:
+		case opcodes.CI_SIGNAL:
 			// Destroy all the threads with passing mask.
 			disasmText = "SIGNAL [signal]"
-		case CI_SETSIGMASK:
+		case opcodes.CI_SETSIGMASK:
 			// Set a mask for thread-killing routine (SIGNAL opcode)
 			disasmText = "SET SIGNAL MASK [mask]"
-		case CI_ADD:
+		case opcodes.CI_ADD:
 			disasmText = "ADD [A B]"
-		case CI_SUB:
+		case opcodes.CI_SUB:
 			disasmText = "SUB [A B]"
-		case CI_MUL:
+		case opcodes.CI_MUL:
 			disasmText = "MULTIPLY [A B]"
-		case CI_DIV:
+		case opcodes.CI_DIV:
 			disasmText = "DIVIDE [A B]"
-		case CI_RAND:
-			disasmText = "RANDOM"
-		case CI_SLEEP:
+		case opcodes.CI_RAND:
+			disasmText = "RANDOM [FROM TO]"
+		case opcodes.CI_SLEEP:
 			disasmText = "SLEEP"
 
 		// 1 argument
-		case CI_PUSH_CONST:
+		case opcodes.CI_PUSH_CONST:
 			disasmText = sprint("PUSH CONSTANT 0x%08X (dec: %4d)", nextval1, nextval1)
 			ipIncrement = 2
-		case CI_JMP:
+		case opcodes.CI_JMP:
 			disasmText = sprint("JMP TO 0x%04X", nextval1)
 			ipIncrement = 2
-		case CI_JMP_IF_FALSE:
+		case opcodes.CI_JMP_IF_FALSE:
 			disasmText = sprint("IF ZERO JMP TO 0x%04X", nextval1)
 			ipIncrement = 2
-		case CI_PUSH_LOCAL_VAR:
+		case opcodes.CI_PUSH_LOCAL_VAR:
 			disasmText = sprint("PUSH LOCAL VAR #%d", nextval1)
 			ipIncrement = 2
-		case CI_POP_LOCAL_VAR:
+		case opcodes.CI_POP_LOCAL_VAR:
 			disasmText = sprint("POP TO LOCAL VAR #%d", nextval1)
 			ipIncrement = 2
-		case CI_EMIT_SFX_FROM_PIECE:
+		case opcodes.CI_EMIT_SFX_FROM_PIECE:
 			disasmText = sprint("EMIT SFX FROM PIECE #%02d ('%s')", nextval1, cs.Pieces[nextval1])
 			ipIncrement = 2
-		case CI_EXPLODE_PIECE:
+		case opcodes.CI_EXPLODE_PIECE:
 			disasmText = sprint("EXPLODE PIECE #%02d ('%s')", nextval1, cs.Pieces[nextval1])
 			ipIncrement = 2
-		case CI_PUSH_STATIC_VAR:
+		case opcodes.CI_PUSH_STATIC_VAR:
 			disasmText = sprint("PUSH STATIC VAR #%d", nextval1)
 			ipIncrement = 2
-		case CI_POP_STATIC_VAR:
+		case opcodes.CI_POP_STATIC_VAR:
 			disasmText = sprint("POP TO STATIC VAR #%d", nextval1)
 			ipIncrement = 2
-		case CI_SHOW_OBJECT:
+		case opcodes.CI_SHOW_OBJECT:
 			disasmText = sprint("SHOW OBJECT #%02d ('%s')", nextval1, cs.Pieces[nextval1])
 			ipIncrement = 2
-		case CI_HIDE_OBJECT:
+		case opcodes.CI_HIDE_OBJECT:
 			disasmText = sprint("HIDE OBJECT #%02d ('%s')", nextval1, cs.Pieces[nextval1])
 			ipIncrement = 2
-		case CI_CACHE:
+		case opcodes.CI_CACHE:
 			disasmText = sprint("CACHE OBJECT #%02d ('%s')", nextval1, cs.Pieces[nextval1])
 			ipIncrement = 2
-		case CI_DONTCACHE:
+		case opcodes.CI_DONTCACHE:
 			disasmText = sprint("DISABLE CACHE FOR #%02d ('%s')", nextval1, cs.Pieces[nextval1])
 			ipIncrement = 2
-		case CI_SHADE:
+		case opcodes.CI_SHADE:
 			disasmText = sprint("SHADE OBJECT #%02d ('%s')", nextval1, cs.Pieces[nextval1])
 			ipIncrement = 2
-		case CI_DONTSHADE:
+		case opcodes.CI_DONTSHADE:
 			disasmText = sprint("DISABLE SHADE FOR #%02d ('%s')", nextval1, cs.Pieces[nextval1])
 			ipIncrement = 2
 
 		// 2 arguments
-		case CI_MOVE_OBJECT:
+		case opcodes.CI_MOVE_OBJECT:
 			disasmText = sprint("MOVE OBJECT #%d BY AXIS #%d [position, dir]", nextval1, nextval2)
 			ipIncrement = 3
-		case CI_ROTATE_OBJECT:
+		case opcodes.CI_ROTATE_OBJECT:
 			disasmText = sprint("ROTATE OBJECT #%d BY AXIS #%d [speed, dir]", nextval1, nextval2)
 			ipIncrement = 3
-		case CI_SPIN_OBJECT:
+		case opcodes.CI_SPIN_OBJECT:
 			disasmText = sprint("SPIN OBJECT #%d BY AXIS #%d [speed, dir]", nextval1, nextval2)
 			ipIncrement = 3
-		case CI_STOP_SPIN_OBJECT:
+		case opcodes.CI_STOP_SPIN_OBJECT:
 			disasmText = sprint("STOP SPINNING OBJECT #%d BY AXIS #%d [deceleration]", nextval1, nextval2)
 			ipIncrement = 3
-		case CI_MOVE_NOW:
+		case opcodes.CI_MOVE_NOW:
 			disasmText = sprint("MOVE NOW OBJECT #%02d BY AXIS #%d [position]", nextval1, nextval2)
 			ipIncrement = 3
-		case CI_TURN_NOW:
+		case opcodes.CI_TURN_NOW:
 			disasmText = sprint("TURN NOW OBJECT #%02d BY AXIS #%d [angle]", nextval1, nextval2)
 			ipIncrement = 3
-		case CI_WAIT_FOR_TURN:
+		case opcodes.CI_WAIT_FOR_TURN:
 			disasmText = sprint("WAIT FOR TURN OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
 			ipIncrement = 3
-		case CI_WAIT_FOR_MOVE:
+		case opcodes.CI_WAIT_FOR_MOVE:
 			disasmText = sprint("WAIT FOR MOVE OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
 			ipIncrement = 3
-		case CI_START_SCRIPT:
+		case opcodes.CI_START_SCRIPT:
 			sName := cs.ProcedureNames[nextval1]
 			// IMPORTANT: new threads should be created with the current (i.e. inherited) signal mask.
 			disasmText = sprint("NEW THREAD FOR SCRIPT #%d ('%s') WITH %d PARAMS FROM STACK", nextval1, sName, nextval2)
 			ipIncrement = 3
-		case CI_CALL_SCRIPT:
+		case opcodes.CI_CALL_SCRIPT:
 			sName := cs.ProcedureNames[nextval1]
 			disasmText = sprint("CALL SCRIPT #%d ('%s') WITH %d PARAMS FROM STACK", nextval1, sName, nextval2)
 			ipIncrement = 3

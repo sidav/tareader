@@ -50,14 +50,10 @@ func main() {
 	r := &binaryreader.Reader{}
 	r.ReadFromFile(openedFile)
 
-	if simScripts {
-		loadModelAndCobByFilename(openedFile)
-		return
-	}
-
-	if strings.Contains(strings.ToLower(openedFile), ".cob") {
+	if !simScripts && strings.Contains(strings.ToLower(openedFile), ".cob") {
 		fmt.Printf("Disassembling the script %s\n", openedFile)
-		scripts.ReadCobFileFromReader(r)
+		script := scripts.ReadCobFileFromReader(r)
+		script.PrintHumanReadableDisassembly()
 		return
 	}
 
@@ -65,6 +61,11 @@ func main() {
 	var scale int32 = 1
 	gAdapter.Init(1366, 768)
 	gAdapter.SetInternalResolution(1366/scale, 768/scale)
+
+	if simScripts {
+		sim3doModelAndScripts(openedFile, gAdapter)
+		return
+	}
 
 	if strings.Contains(openedFile, ".3do") {
 		onlyShow3doModel(r, gAdapter)
@@ -77,16 +78,16 @@ func main() {
 }
 
 func onlyShow3doModel(r *binaryreader.Reader, gAdapter graphicadapter.GraphicBackend) {
-	textures := readAllGAFsFromDirectory("game_files/files_gaf")
+	textures := readAllGAFsFromDirectory()
 	rend := renderer.Renderer{}
 	rend.Init(gAdapter)
 	pp("Opening model %s\n", r.FileName)
 	modelInTAFormat := object3d.ReadObjectFromReader(r, 0)
 	pp("{\n%s}", modelInTAFormat.ToString(0))
 
-	mdl := model.NewModelFrom3doObject3d(modelInTAFormat, textures)
-	object := model.CreateObjectFromModel(mdl)
-	object.Print(0)
+	object := model.SimObject{}
+	object.InitFromCavedogData(modelInTAFormat, textures, nil)
+	object.ModelState.Print(0)
 
 	for i := 0; i < 3; i++ {
 		gAdapter.BeginFrame()
@@ -102,7 +103,7 @@ func onlyShow3doModel(r *binaryreader.Reader, gAdapter graphicadapter.GraphicBac
 	for !rl.IsKeyDown(rl.KeyEscape) {
 		start := time.Now()
 		// gAdapter.BeginFrame()
-		rend.RenderObject(object)
+		rend.RenderObject(object.ModelState)
 		// gAdapter.EndFrame()
 		totalFrames++
 		timeSince := time.Since(start)

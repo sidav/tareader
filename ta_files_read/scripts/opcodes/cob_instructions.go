@@ -1,4 +1,4 @@
-package scripts
+package opcodes
 
 // All the instruction opcodes for the COB script machine.
 const (

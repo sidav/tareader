@@ -9,18 +9,24 @@ import (
 	"totala_reader/ta_files_read/texture"
 )
 
-func readAllGAFsFromDirectory(directoryName string) []*texture.GafEntry {
-	pp("Reading all GAF entries from dir %s", directoryName)
+const (
+	folderGaf = "game_files/files_gaf/"
+	folder3do = "game_files/files_3do/"
+	folderCob = "game_files/files_cob/"
+)
+
+func readAllGAFsFromDirectory() []*texture.GafEntry {
+	pp("Reading all GAF entries from dir %s", folderGaf)
 	var allEntries []*texture.GafEntry
-	if directoryName[len(directoryName)-1] != "/"[0] {
-		directoryName += "/"
-	}
-	items, _ := os.ReadDir(directoryName)
+	// if directoryName[len(directoryName)-1] != "/"[0] {
+	// 	directoryName += "/"
+	// }
+	items, _ := os.ReadDir(folderGaf)
 	for _, item := range items {
 		if item.IsDir() {
 			// do nothing
 		} else {
-			openedFileName := directoryName + item.Name()
+			openedFileName := folderGaf + item.Name()
 			r := &tafilesread.Reader{}
 			r.ReadFromFile(openedFileName)
 			readedGAFEntries := texture.ReadTextureFromReader(r, false)
@@ -34,8 +40,6 @@ func readAllGAFsFromDirectory(directoryName string) []*texture.GafEntry {
 
 // Read script and model from different folders by file name
 func loadModelAndCobByFilename(filename string) (*object3d.Object, *scripts.CobScript) {
-	const folder3do = "game_files/files_3do/"
-	const foldercob = "game_files/files_cob/"
 	baseName := getBaseNameByFilename(filename)
 
 	var modelInTAFormat *object3d.Object
@@ -52,14 +56,14 @@ func loadModelAndCobByFilename(filename string) (*object3d.Object, *scripts.CobS
 			break
 		}
 	}
-	items, _ = os.ReadDir(foldercob)
+	items, _ = os.ReadDir(folderCob)
 	for _, item := range items {
 		cobName := strings.ToLower(item.Name())
 		if !strings.Contains(cobName, ".cob") {
 			continue
 		}
 		if strings.Contains(cobName, baseName) {
-			openedFileName := foldercob + item.Name()
+			openedFileName := folderCob + item.Name()
 			pp("Opening COB %s", openedFileName)
 			r := &tafilesread.Reader{}
 			r.ReadFromFile(openedFileName)
