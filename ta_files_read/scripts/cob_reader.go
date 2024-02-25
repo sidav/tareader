@@ -4,7 +4,7 @@ import (
 	tafilesread "totala_reader/ta_files_read"
 )
 
-func ReadCobFileFromReader(r *tafilesread.Reader) {
+func ReadCobFileFromReader(r *tafilesread.Reader) *CobScript {
 	// Reading the header
 	version := r.ReadIntFromBytesArray(0, 0)
 	scriptsCount := r.ReadIntFromBytesArray(0, 4)
@@ -37,7 +37,7 @@ func ReadCobFileFromReader(r *tafilesread.Reader) {
 		pieceNameOffset := r.ReadIntFromBytesArray(offsetToPieceNamesIndices, pNum*4)
 		pieceName := r.ReadNullTermStringFromBytesArray(pieceNameOffset, 0)
 		script.Pieces = append(script.Pieces, pieceName)
-		print("  %s\n", pieceName)
+		print("%3d:  %s\n", pNum, pieceName)
 	}
 
 	print("Reading scripts descriptors: \n")
@@ -48,16 +48,17 @@ func ReadCobFileFromReader(r *tafilesread.Reader) {
 		// ScriptNumber is given in int32s, so the final formula is OffsetToScriptCode + (ScriptCodeIndexArray[ScriptNumber*4] * 4)
 		currentScriptCodeOffset := r.ReadIntFromBytesArray(offsetToScriptCodeIndices, sNum*4)
 
-		print("  %-12s at 0x%08X (local index 0x%08X); \n", scriptName,
+		print("%3d:  %-20s at 0x%08X (local index 0x%08X); \n", sNum, scriptName,
 			offsetToRawCode+currentScriptCodeOffset*4, currentScriptCodeOffset*4)
 
 		script.ProcedureNames = append(script.ProcedureNames, scriptName)
 		script.ProcedureAddresses = append(script.ProcedureAddresses, int32(currentScriptCodeOffset))
 	}
 
-	print("Reading raw code: \n")
+	print("Reading raw code...\n")
 	script.RawCode = readRawCodeFromCOB(r, offsetToRawCode, offsetToScriptCodeIndices)
-	script.PrintHumanReadableDisassembly()
+	print("COB parsed.\n")
+	return script
 }
 
 func readRawCodeFromCOB(r *tafilesread.Reader, offsetToRawCode, readUntilAddress int) []int32 {

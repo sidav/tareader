@@ -19,8 +19,9 @@ import (
 )
 
 func main() {
-	var doProfiling bool
+	var doProfiling, simScripts bool
 	flag.BoolVar(&doProfiling, "p", false, "Perform CPU pprof recording")
+	flag.BoolVar(&simScripts, "sim", false, "Load model and scripts for full simulation")
 	flag.Parse()
 
 	if doProfiling {
@@ -48,6 +49,11 @@ func main() {
 
 	r := &binaryreader.Reader{}
 	r.ReadFromFile(openedFile)
+
+	if simScripts {
+		loadModelAndCobByFilename(openedFile)
+		return
+	}
 
 	if strings.Contains(strings.ToLower(openedFile), ".cob") {
 		fmt.Printf("Disassembling the script %s\n", openedFile)
