@@ -8,10 +8,12 @@ import (
 )
 
 type Reader struct {
+	FileName  string
 	fileBytes []byte
 }
 
 func (mr *Reader) ReadFromFile(fileName string) {
+	mr.FileName = fileName
 	file, _ := os.Open(fileName)
 	defer file.Close()
 	// Get the file size
