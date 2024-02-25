@@ -5,6 +5,8 @@ import (
 	tafilesread "totala_reader/ta_files_read"
 )
 
+var describeActions bool
+
 type GafEntry struct {
 	Name   string
 	Frames []*GafFrame
@@ -14,17 +16,22 @@ type GafFrame struct {
 	Pixels [][]uint8 // each value is an index from palette
 }
 
-func ReadTextureFromReader(r *tafilesread.Reader) []*GafEntry {
+func ReadTextureFromReader(r *tafilesread.Reader, verbose bool) []*GafEntry {
+	describeActions = verbose
 	// Reading header
 	version := r.ReadIntFromBytesArray(0, 0)
 	entries := r.ReadIntFromBytesArray(0, 4)
 	always0 := r.ReadIntFromBytesArray(0, 8)
-	fmt.Printf("Version %d, entries %d, should be zero %d\n", version, entries, always0)
+	if describeActions {
+		fmt.Printf("GAF file %s\nVersion %d, entries %d, should be zero %d\n", r.FileName, version, entries, always0)
+	}
 	var entryPointers []int
 	for i := 0; i < entries; i++ {
 		entryPointers = append(entryPointers, r.ReadIntFromBytesArray(12, i*4))
 	}
-	fmt.Printf("Pointers acquired.\n")
+	if describeActions {
+		fmt.Printf("Pointers acquired.\n")
+	}
 
 	entriesArray := make([]*GafEntry, entries)
 
@@ -33,10 +40,11 @@ func ReadTextureFromReader(r *tafilesread.Reader) []*GafEntry {
 		always1 := r.ReadUint16FromBytesArray(off, 2)
 		always0 = r.ReadIntFromBytesArray(off, 4)
 		name := r.ReadFixedLengthStringFromBytesArray(off, 8, 32)
-		fmt.Printf("GAF entry #%d at offset %d:\n", index, off)
-		fmt.Printf("  Name \"%s\", %d frames, %d should be one, %d should be zero\n",
-			name, frames, always1, always0)
-
+		if describeActions {
+			fmt.Printf("GAF entry #%d at offset %d:\n", index, off)
+			fmt.Printf("  Name \"%s\", %d frames, %d should be one, %d should be zero\n",
+				name, frames, always1, always0)
+		}
 		entry := &GafEntry{
 			Name: name,
 		}
@@ -44,8 +52,10 @@ func ReadTextureFromReader(r *tafilesread.Reader) []*GafEntry {
 		for gfe := 0; gfe < frames; gfe++ {
 			ptrFrameEntry := r.ReadIntFromBytesArray(off, 40)
 			unknown := r.ReadIntFromBytesArray(off, 44)
-			fmt.Printf("    GAF frame entry %d:\n", gfe)
-			fmt.Printf("      Pointer to the data: %d, unknown value: %d\n", ptrFrameEntry, unknown)
+			if describeActions {
+				fmt.Printf("    GAF frame entry %d:\n", gfe)
+				fmt.Printf("      Pointer to the data: %d, unknown value: %d\n", ptrFrameEntry, unknown)
+			}
 			entry.Frames = append(entry.Frames, readGafFrameData(r, ptrFrameEntry))
 		}
 		entriesArray[index] = entry
@@ -64,11 +74,13 @@ func readGafFrameData(r *tafilesread.Reader, offset int) *GafFrame {
 	unknown2 := r.ReadIntFromBytesArray(offset, 12)
 	ptrFrameData := r.ReadIntFromBytesArray(offset, 16)
 	unknown3 := r.ReadIntFromBytesArray(offset, 20)
-	fmt.Printf("      GAF Frame Data: \n")
-	fmt.Printf("        %dx%dpx, xPos %d, yPos %d\n", width, height, xPos, yPos)
-	fmt.Printf("        Unknown1: %d, compressed %v\n", unknownByte, compressed)
-	fmt.Printf("        Frame pointers: %d, Unknown2 %d\n", framePointers, unknown2)
-	fmt.Printf("        PtrFrameData: %d, Unknown3 %d\n", ptrFrameData, unknown3)
+	if describeActions {
+		fmt.Printf("      GAF Frame Data: \n")
+		fmt.Printf("        %dx%dpx, xPos %d, yPos %d\n", width, height, xPos, yPos)
+		fmt.Printf("        Unknown1: %d, compressed %v\n", unknownByte, compressed)
+		fmt.Printf("        Frame pointers: %d, Unknown2 %d\n", framePointers, unknown2)
+		fmt.Printf("        PtrFrameData: %d, Unknown3 %d\n", ptrFrameData, unknown3)
+	}
 
 	frame := &GafFrame{}
 
