@@ -10,7 +10,7 @@ import (
 // Top-level unit struct: something scriptable and with a model.
 type SimObject struct {
 	ModelState *ModelledObject
-	CobState   cob.CobState
+	CobState   cob.CobMachine
 	Script     *scripts.CobScript
 }
 
@@ -21,6 +21,7 @@ func (so *SimObject) InitFromCavedogData(cavedogModel *object3d.Object,
 	so.ModelState = CreateObjectFromModel(modelgeometry)
 	if cobScript != nil { // TODO: make this obligatory
 		so.Script = cobScript
+		so.CobState.Threads[0].Active = true
 		// TODO: call 'Create' COB subprogram here?
 	}
 }
