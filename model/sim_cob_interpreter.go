@@ -80,7 +80,6 @@ func (so *SimObject) cobStepThread(t *cob.CobThread) {
 		a := t.DataStack.PopWord()
 		t.DataStack.Push(a | b)
 		disasmText = sprint("BITWISE OR [%d | %d] (pushing %d)", a, b, t.DataStack.Peek())
-		cobPanic("Check: %s", disasmText)
 	case opcodes.CI_SETSIGMASK:
 		// Set a mask for thread-killing routine (SIGNAL opcode)
 		t.SigMask = t.DataStack.PopWord()

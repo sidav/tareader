@@ -10,7 +10,7 @@ import (
 // One model can have multiple ModelledObjects, but a single ModelledObject can belong only to one Model.
 // TODO: rename! There is too much stuff called "object" already.
 type ModelledObject struct {
-	Name           string
+	Name           string // TODO: remove (name already present in ModelForObject!)
 	Matrix         *matrix4x4.Matrix4x4
 	Child          *ModelledObject
 	Sibling        *ModelledObject
@@ -52,4 +52,21 @@ func initObjectFromModel(m *Model, parentObj *ModelledObject) *ModelledObject {
 		obj.Sibling = initObjectFromModel(m.SiblingObject, parentObj)
 	}
 	return obj
+}
+
+func (mo *ModelledObject) findPieceByName(name string) *ModelledObject {
+	if mo.Name == name {
+		return mo
+	}
+	var found *ModelledObject
+	if mo.Child != nil {
+		found = mo.Child.findPieceByName(name)
+		if found != nil {
+			return found
+		}
+	}
+	if mo.Sibling != nil {
+		found = mo.Sibling.findPieceByName(name)
+	}
+	return found
 }
