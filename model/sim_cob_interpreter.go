@@ -7,9 +7,16 @@ import (
 )
 
 func (so *SimObject) CobStepAllThreads() {
-	for i := range so.CobState.Threads {
-		if so.CobState.Threads[i].Active {
-			so.cobStepThread(&so.CobState.Threads[i])
+	for i := range so.CobMachine.Threads {
+		if so.CobMachine.Threads[i].Active {
+			// Skip thread if it sleeps
+			if so.CobMachine.Threads[i].SleepTicksRemaining > 0 {
+				so.CobMachine.Threads[i].SleepTicksRemaining--
+				so.CobMachine.Threads[i].SleepTicksRemaining -= 10 // TODO: remove (it's for debug)
+				continue
+			}
+
+			so.cobStepThread(&so.CobMachine.Threads[i])
 		}
 	}
 }
@@ -30,8 +37,8 @@ func (so *SimObject) cobStepThread(t *cob.CobThread) {
 	// No arguments
 	// case opcodes.CI_RETURN:
 	// 	disasmText = "RETURN"
-	case opcodes.CI_ALLOC_LOCAL_VAR:
-		disasmText = "?? ALLOC LOCAL VAR ??"
+	// case opcodes.CI_ALLOC_LOCAL_VAR:
+	// 	disasmText = "?? ALLOC LOCAL VAR ??"
 	// case opcodes.CI_GET_VALUE:
 	// 	disasmText = "GET VALUE [port]"
 	// case opcodes.CI_GET_VALUE_WITH_ARGS:
@@ -42,38 +49,38 @@ func (so *SimObject) cobStepThread(t *cob.CobThread) {
 		b := t.DataStack.PopWord()
 		a := t.DataStack.PopWord()
 		t.DataStack.PushBool(a < b)
-		disasmText = sprint("IF (%d < %d) PUSH 1 ELSE PUSH 0", a, b)
+		disasmText = sprint("IF (%d < %d) PUSH 1 ELSE PUSH 0 (pushed %d)", a, b, t.DataStack.Peek())
 	case opcodes.CI_CMP_LEQ:
 		b := t.DataStack.PopWord()
 		a := t.DataStack.PopWord()
 		t.DataStack.PushBool(a <= b)
-		disasmText = sprint("IF (%d <= %d) PUSH 1 ELSE PUSH 0", a, b)
+		disasmText = sprint("IF (%d <= %d) PUSH 1 ELSE PUSH 0 (pushed %d)", a, b, t.DataStack.Peek())
 	case opcodes.CI_CMP_EQ:
 		b := t.DataStack.PopWord()
 		a := t.DataStack.PopWord()
 		t.DataStack.PushBool(a == b)
-		disasmText = sprint("IF (%d == %d) PUSH 1 ELSE PUSH 0", a, b)
+		disasmText = sprint("IF (%d == %d) PUSH 1 ELSE PUSH 0 (pushed %d)", a, b, t.DataStack.Peek())
 	case opcodes.CI_CMP_NEQ:
 		b := t.DataStack.PopWord()
 		a := t.DataStack.PopWord()
 		t.DataStack.PushBool(a != b)
-		disasmText = sprint("IF (%d != %d) PUSH 1 ELSE PUSH 0", a, b)
+		disasmText = sprint("IF (%d != %d) PUSH 1 ELSE PUSH 0 (pushed %d)", a, b, t.DataStack.Peek())
 	case opcodes.CI_CMP_GREATER:
 		b := t.DataStack.PopWord()
 		a := t.DataStack.PopWord()
 		t.DataStack.PushBool(a > b)
-		disasmText = sprint("IF (%d > %d) PUSH 1 ELSE PUSH 0", a, b)
+		disasmText = sprint("IF (%d > %d) PUSH 1 ELSE PUSH 0 (pushed %d)", a, b, t.DataStack.Peek())
 	case opcodes.CI_CMP_GEQ:
 		b := t.DataStack.PopWord()
 		a := t.DataStack.PopWord()
 		t.DataStack.PushBool(a >= b)
-		disasmText = sprint("IF (%d >= %d) PUSH 1 ELSE PUSH 0", a, b)
+		disasmText = sprint("IF (%d >= %d) PUSH 1 ELSE PUSH 0 (pushed %d)", a, b, t.DataStack.Peek())
 	case opcodes.CI_BITWISE_OR:
 		b := t.DataStack.PopWord()
 		a := t.DataStack.PopWord()
 		t.DataStack.Push(a | b)
 		disasmText = sprint("BITWISE OR [%d | %d] (pushing %d)", a, b, t.DataStack.Peek())
-		cobPanic("Check!")
+		cobPanic("Check: %s", disasmText)
 	case opcodes.CI_SETSIGMASK:
 		// Set a mask for thread-killing routine (SIGNAL opcode)
 		t.SigMask = t.DataStack.PopWord()
@@ -97,29 +104,26 @@ func (so *SimObject) cobStepThread(t *cob.CobThread) {
 		b := t.DataStack.PopWord()
 		a := t.DataStack.PopWord()
 		t.DataStack.Push(a / b)
-		disasmText = sprint("MUL: %X / %X (pushing %X)", a, b, t.DataStack.Peek())
+		disasmText = sprint("DIV: %X / %X (pushing %X)", a, b, t.DataStack.Peek())
 	case opcodes.CI_RAND:
 		to := t.DataStack.PopWord()
 		from := t.DataStack.PopWord()
 		val := from + rand.Int31n(to-from)
 		t.DataStack.Push(val)
 		disasmText = sprint("RANDOM [%d...%d] (pushing %d)", from, to, val)
-		cobPanic("Check!")
-	// case opcodes.CI_SIGNAL:
-	// 	// Destroy all the threads with passing mask.
-	// 	disasmText = "SIGNAL [signal]"
-	// case opcodes.CI_SLEEP:
-	// remainingTicks := t.DataStack.PopWord()
-	// if remainingTicks < 0 {
-	// 	panic("Negative sleep duration")
-	// }
-	// if remainingTicks == 0 {
-	// 	disasmText = "SLEEP ENDED"
-	// } else {
-	// 	disasmText = sprint("SLEEP (%d ticks remaining)", remainingTicks)
-	// 	ipIncrement = 0
-	// 	t.DataStack.Push(remainingTicks - 1)
-	// }
+		cobPanic("Check: %s", disasmText)
+	case opcodes.CI_SIGNAL:
+		// Destroy all the threads by signal mask.
+		mask := t.DataStack.PopWord()
+		sigResult := so.CobMachine.Signal(mask)
+		disasmText = sprint("SIGNAL [0x%08X], stopped threads: [%s]", mask, sigResult)
+	case opcodes.CI_SLEEP:
+		duration := t.DataStack.PopWord()
+		if duration < 0 {
+			cobPanic("Negative sleep duration")
+		}
+		disasmText = sprint("SLEEP FOR %d TICKS", duration)
+		t.SetSleep(duration)
 
 	// 1 argument
 	case opcodes.CI_PUSH_CONST:
@@ -139,47 +143,58 @@ func (so *SimObject) cobStepThread(t *cob.CobThread) {
 			break
 		}
 		ipIncrement = 2
-	case opcodes.CI_PUSH_LOCAL_VAR:
-		t.DataStack.Push(t.LVars[nextval1])
-		disasmText = sprint("PUSH LOCAL VAR #%d (equals %d)", nextval1, t.DataStack.Peek())
+	// case opcodes.CI_PUSH_LOCAL_VAR:
+	// 	t.DataStack.Push(t.LVars[nextval1])
+	// 	disasmText = sprint("PUSH LOCAL VAR #%d (pushed %d)", nextval1, t.DataStack.Peek())
+	// 	ipIncrement = 2
+	// case opcodes.CI_POP_LOCAL_VAR:
+	// 	val := t.DataStack.PopWord()
+	// 	t.LVars[nextval1] = val
+	// 	disasmText = sprint("POP TO LOCAL VAR #%d ($%d = %d)", nextval1, nextval1, val)
+	// 	ipIncrement = 2
+	case opcodes.CI_PUSH_STATIC_VAR:
+		t.DataStack.Push(so.CobMachine.SVars[nextval1])
+		disasmText = sprint("PUSH STATIC VAR #%d (pushed %d)", nextval1, t.DataStack.Peek())
 		ipIncrement = 2
-	case opcodes.CI_POP_LOCAL_VAR:
-		val := t.DataStack.PopWord()
-		t.LVars[nextval1] = val
-		disasmText = sprint("POP TO LOCAL VAR #%d (#%d = %d)", nextval1, nextval1, val)
+	case opcodes.CI_POP_STATIC_VAR:
+		so.CobMachine.SVars[nextval1] = t.DataStack.PopWord()
+		disasmText = sprint("POP TO STATIC VAR #%d ($%d = %d)", nextval1, nextval1, so.CobMachine.SVars[nextval1])
 		ipIncrement = 2
-	// case opcodes.CI_PUSH_STATIC_VAR:
-	// 	disasmText = sprint("PUSH STATIC VAR #%d", nextval1)
-	// 	ipIncrement = 2
-	// case opcodes.CI_POP_STATIC_VAR:
-	// 	disasmText = sprint("POP TO STATIC VAR #%d", nextval1)
-	// 	ipIncrement = 2
-	// case opcodes.CI_EMIT_SFX_FROM_PIECE:
-	// 	disasmText = sprint("EMIT SFX FROM PIECE #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
-	// 	ipIncrement = 2
-	// case opcodes.CI_EXPLODE_PIECE:
-	// 	disasmText = sprint("EXPLODE PIECE #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
-	// 	ipIncrement = 2
+
+	// case opcodes.CI_START_SCRIPT:
+	// 	sName := so.Script.ProcedureNames[nextval1]
+	// 	so.CobMachine.AllocNewThread(so.Script.ProcedureAddresses[nextval1], t.SigMask)
+	// 	// IMPORTANT: new threads should be created with the current (i.e. inherited) signal mask.
+	// 	disasmText = sprint("NEW THREAD: script #%d ('%s') WITH %d PARAMS FROM STACK", nextval1, sName, nextval2)
+	// 	ipIncrement = 3
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Unimplemented or postponed stuff:
 	// case opcodes.CI_SHOW_OBJECT:
-	// 	disasmText = sprint("SHOW OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+	// 	disasmText = sprint("UNIMPLEMENTED: SHOW OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
 	// 	ipIncrement = 2
 	// case opcodes.CI_HIDE_OBJECT:
-	// 	disasmText = sprint("HIDE OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+	// 	disasmText = sprint("UNIMPLEMENTED: HIDE OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+	// 	ipIncrement = 2
+	// case opcodes.CI_EMIT_SFX_FROM_PIECE:
+	// 	disasmText = sprint("UNIMPLEMENTED: EMIT SFX FROM PIECE #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+	// 	ipIncrement = 2
+	// case opcodes.CI_EXPLODE_PIECE:
+	// 	disasmText = sprint("UNIMPLEMENTED: EXPLODE PIECE #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
 	// 	ipIncrement = 2
 	// case opcodes.CI_CACHE:
-	// 	disasmText = sprint("CACHE OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+	// 	disasmText = sprint("UNIMPLEMENTED: CACHE OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
 	// 	ipIncrement = 2
 	// case opcodes.CI_DONTCACHE:
-	// 	disasmText = sprint("DISABLE CACHE FOR #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+	// 	disasmText = sprint("UNIMPLEMENTED: DISABLE CACHE FOR #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
 	// 	ipIncrement = 2
 	// case opcodes.CI_SHADE:
-	// 	disasmText = sprint("SHADE OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+	// 	disasmText = sprint("UNIMPLEMENTED: SHADE OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
 	// 	ipIncrement = 2
 	// case opcodes.CI_DONTSHADE:
-	// 	disasmText = sprint("DISABLE SHADE FOR #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+	// 	disasmText = sprint("UNIMPLEMENTED: DISABLE SHADE FOR #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
 	// 	ipIncrement = 2
-
-	// 2 arguments
 	// case opcodes.CI_MOVE_OBJECT:
 	// 	disasmText = sprint("MOVE OBJECT #%d BY AXIS #%d [position, dir]", nextval1, nextval2)
 	// 	ipIncrement = 3
@@ -204,17 +219,10 @@ func (so *SimObject) cobStepThread(t *cob.CobThread) {
 	// case opcodes.CI_WAIT_FOR_MOVE:
 	// 	disasmText = sprint("WAIT FOR MOVE OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
 	// 	ipIncrement = 3
-	// case opcodes.CI_START_SCRIPT:
-	// 	sName := so.Script.ProcedureNames[nextval1]
-	// 	// IMPORTANT: new threads should be created with the current (i.e. inherited) signal mask.
-	// 	disasmText = sprint("NEW THREAD FOR SCRIPT #%d ('%s') WITH %d PARAMS FROM STACK", nextval1, sName, nextval2)
-	// 	ipIncrement = 3
 	// case opcodes.CI_CALL_SCRIPT:
 	// 	sName := so.Script.ProcedureNames[nextval1]
 	// 	disasmText = sprint("CALL SCRIPT #%d ('%s') WITH %d PARAMS FROM STACK", nextval1, sName, nextval2)
 	// 	ipIncrement = 3
-
-	// Unimplemented stuff:
 	default:
 		// disasmText = sprint("<0x%08X (%s)>", opcode, sprintInt32AsBigEndianHex(opcode))
 		disasmText = sprint("Unknown opcode < 0x%08X > (next words 0x%08X and 0x%08X)", opcode, nextval1, nextval2)

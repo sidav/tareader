@@ -2,11 +2,16 @@ package cob
 
 import "fmt"
 
-const stackMaxDepth = 16
+// const stackMaxDepth = 16
+const stackMaxDepth = 1024 // TEMPORARY VALUE!!!
 
 type Stack struct {
 	data      [stackMaxDepth]int32
 	stackSize int
+}
+
+func (cs *Stack) reset() {
+	cs.stackSize = 0
 }
 
 func (cs *Stack) Push(word int32) {

@@ -10,7 +10,7 @@ import (
 // Top-level unit struct: something scriptable and with a model.
 type SimObject struct {
 	ModelState *ModelledObject
-	CobState   cob.CobMachine
+	CobMachine cob.CobMachine
 	Script     *scripts.CobScript
 }
 
@@ -21,7 +21,17 @@ func (so *SimObject) InitFromCavedogData(cavedogModel *object3d.Object,
 	so.ModelState = CreateObjectFromModel(modelgeometry)
 	if cobScript != nil { // TODO: make this obligatory
 		so.Script = cobScript
-		so.CobState.Threads[0].Active = true
-		// TODO: call 'Create' COB subprogram here?
+		// We need to call 'Create' COB subprogram here.
+		// First, determine which virtual address we need
+		var createFuncAddr int32 = -1
+		for i := range cobScript.ProcedureNames {
+			if cobScript.ProcedureNames[i] == "Create" {
+				createFuncAddr = cobScript.ProcedureAddresses[i]
+			}
+		}
+		if createFuncAddr == -1 {
+			panic("COB INIT ERROR: No 'Create' func found!")
+		}
+		so.CobMachine.AllocNewThread(createFuncAddr, 0)
 	}
 }
