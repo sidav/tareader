@@ -33,8 +33,7 @@ func (cs *Stack) PushBool(val bool) {
 
 func (cs *Stack) PopWord() int32 {
 	if cs.stackSize == 0 {
-		fmt.Print("!!! ERROR: empty stack !!!")
-		panic("Stack Error")
+		panic("COB VPU ERROR: attempting to pop from empty stack.")
 	}
 	cs.stackSize--
 	return cs.data[cs.stackSize]
