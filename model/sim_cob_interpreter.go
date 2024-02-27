@@ -35,8 +35,16 @@ func (so *SimObject) cobStepThread(t *cob.CobThread) {
 
 	switch opcode {
 	// No arguments
-	// case opcodes.CI_RETURN:
-	// 	disasmText = "RETURN"
+	case opcodes.CI_RETURN:
+		ipBefore := t.IP
+		t.DoReturn()
+		ipAfter := t.IP
+		if t.Active {
+			disasmText = sprint("RETURN (from 0x%04X to 0x%04X)", ipBefore, ipAfter)
+		} else {
+			disasmText = sprint("RETURN (call stack empty, deactivating the thread)")
+		}
+		ipIncrement = 0
 	// case opcodes.CI_ALLOC_LOCAL_VAR:
 	// 	disasmText = "?? ALLOC LOCAL VAR ??"
 	// case opcodes.CI_GET_VALUE:
@@ -160,12 +168,25 @@ func (so *SimObject) cobStepThread(t *cob.CobThread) {
 		disasmText = sprint("POP TO STATIC VAR #%d ($%d = %d)", nextval1, nextval1, so.CobMachine.SVars[nextval1])
 		ipIncrement = 2
 
-	// case opcodes.CI_START_SCRIPT:
-	// 	sName := so.Script.ProcedureNames[nextval1]
-	// 	so.CobMachine.AllocNewThread(so.Script.ProcedureAddresses[nextval1], t.SigMask)
-	// 	// IMPORTANT: new threads should be created with the current (i.e. inherited) signal mask.
-	// 	disasmText = sprint("NEW THREAD: script #%d ('%s') WITH %d PARAMS FROM STACK", nextval1, sName, nextval2)
-	// 	ipIncrement = 3
+	case opcodes.CI_START_SCRIPT:
+		if nextval2 > 0 {
+			cobPanic("Inimplemented: arguments (%d required)", nextval2)
+		}
+		sName := so.Script.ProcedureNames[nextval1]
+		// IMPORTANT: new threads should be created with the current (i.e. inherited) signal mask.
+		so.CobMachine.AllocNewThread(so.Script.ProcedureAddresses[nextval1], t.SigMask)
+		disasmText = sprint("NEW THREAD: script #%d ('%s') WITH %d PARAMS FROM STACK", nextval1, sName, nextval2)
+		ipIncrement = 3
+
+	case opcodes.CI_CALL_SCRIPT:
+		if nextval2 > 0 {
+			cobPanic("Inimplemented: arguments (%d required)", nextval2)
+		}
+		ipIncrement = 0 // DON'T auto-increase the IP, it will be manually increased below
+		sName := so.Script.ProcedureNames[nextval1]
+		disasmText = sprint("CALL SCRIPT #%d ('%s') WITH %d PARAMS FROM STACK", nextval1, sName, nextval2)
+		t.IP += 3
+		t.DoCall(nextval1, nextval2)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
