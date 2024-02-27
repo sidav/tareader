@@ -27,12 +27,7 @@ func (so *SimObject) InitFromCavedogData(cavedogModel *object3d.Object,
 		so.mapPieces()
 		// We need to call 'Create' COB subprogram here.
 		// First, determine which virtual address we need
-		var createFuncAddr int32 = -1
-		for i := range cobScript.ProcedureNames {
-			if cobScript.ProcedureNames[i] == "Create" {
-				createFuncAddr = cobScript.ProcedureAddresses[i]
-			}
-		}
+		var createFuncAddr int32 = cobScript.FindFuncAddressByName("Create")
 		if createFuncAddr == -1 {
 			panic("COB INIT ERROR: No 'Create' func found!")
 		}

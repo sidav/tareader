@@ -1,6 +1,9 @@
 package model
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func print(text string, args ...interface{}) {
 	fmt.Printf(text, args...)
@@ -8,6 +11,11 @@ func print(text string, args ...interface{}) {
 
 func sprint(text string, args ...interface{}) string {
 	return fmt.Sprintf(text, args...)
+}
+
+func printwait(text string, args ...interface{}) {
+	print(text, args...)
+	time.Sleep(3 * time.Second)
 }
 
 func cobPanic(text string, args ...interface{}) {
