@@ -15,6 +15,8 @@ type ModelledObject struct {
 	Child          *ModelledObject
 	Sibling        *ModelledObject
 	ModelForObject *Model
+
+	Hidden bool // may be hidden by scripts; should skip rendering then
 }
 
 func (mo *ModelledObject) Print(offset int) {

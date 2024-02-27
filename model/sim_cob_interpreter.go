@@ -119,7 +119,6 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 		val := from + rand.Int31n(to-from)
 		t.DataStack.Push(val)
 		disasmText = sprint("RANDOM [%d...%d] (pushing %d)", from, to, val)
-		cobPanic("Check: %s", disasmText)
 	case opcodes.CI_SIGNAL:
 		// Destroy all the threads by signal mask.
 		mask := t.DataStack.PopWord()
@@ -171,7 +170,7 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 
 	case opcodes.CI_START_SCRIPT:
 		if nextval2 > 0 {
-			cobPanic("Inimplemented: arguments (%d required)", nextval2)
+			cobPanic("Please implement arguments for START (%d args requested)", nextval2)
 		}
 		sName := so.Script.ProcedureNames[nextval1]
 		// IMPORTANT: new threads should be created with the current (i.e. inherited) signal mask.
@@ -181,7 +180,7 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 
 	case opcodes.CI_CALL_SCRIPT:
 		if nextval2 > 0 {
-			cobPanic("Inimplemented: arguments (%d required)", nextval2)
+			cobPanic("Please implement arguments for CALL (%d args requested)", nextval2)
 		}
 		ipIncrement = 0 // DON'T auto-increase the IP, it will be manually increased below
 		sName := so.Script.ProcedureNames[nextval1]
@@ -189,15 +188,19 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 		t.IP += 3
 		t.DoCall(nextval1, nextval2)
 
+	case opcodes.CI_SHOW_OBJECT:
+		so.PiecesMapping[nextval1].Hidden = false
+		disasmText = sprint("SHOW OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+		ipIncrement = 2
+
+	case opcodes.CI_HIDE_OBJECT:
+		so.PiecesMapping[nextval1].Hidden = true
+		disasmText = sprint("HIDE OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+		ipIncrement = 2
+
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Unimplemented or postponed stuff:
-	// case opcodes.CI_SHOW_OBJECT:
-	// 	disasmText = sprint("UNIMPLEMENTED: SHOW OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
-	// 	ipIncrement = 2
-	// case opcodes.CI_HIDE_OBJECT:
-	// 	disasmText = sprint("UNIMPLEMENTED: HIDE OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
-	// 	ipIncrement = 2
 	// case opcodes.CI_EMIT_SFX_FROM_PIECE:
 	// 	disasmText = sprint("UNIMPLEMENTED: EMIT SFX FROM PIECE #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
 	// 	ipIncrement = 2
@@ -239,10 +242,6 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 	// 	ipIncrement = 3
 	// case opcodes.CI_WAIT_FOR_MOVE:
 	// 	disasmText = sprint("WAIT FOR MOVE OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
-	// 	ipIncrement = 3
-	// case opcodes.CI_CALL_SCRIPT:
-	// 	sName := so.Script.ProcedureNames[nextval1]
-	// 	disasmText = sprint("CALL SCRIPT #%d ('%s') WITH %d PARAMS FROM STACK", nextval1, sName, nextval2)
 	// 	ipIncrement = 3
 	default:
 		// disasmText = sprint("<0x%08X (%s)>", opcode, sprintInt32AsBigEndianHex(opcode))
