@@ -2,6 +2,7 @@ package model
 
 import (
 	"math/rand"
+	"strings"
 	"totala_reader/model/cob"
 	"totala_reader/ta_files_read/scripts/opcodes"
 )
@@ -16,12 +17,12 @@ func (so *SimObject) CobStepAllThreads() {
 				continue
 			}
 
-			so.cobStepThread(&so.CobMachine.Threads[i])
+			so.cobStepThread(&so.CobMachine.Threads[i], i)
 		}
 	}
 }
 
-func (so *SimObject) cobStepThread(t *cob.CobThread) {
+func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 	var ipIncrement int32 = 1
 	var nextval1, nextval2 int32
 	opcode := so.Script.RawCode[t.IP]
@@ -248,6 +249,7 @@ func (so *SimObject) cobStepThread(t *cob.CobThread) {
 		disasmText = sprint("Unknown opcode < 0x%08X > (next words 0x%08X and 0x%08X)", opcode, nextval1, nextval2)
 	}
 
-	print("  IP %04X:  "+disasmText+"\n", t.IP)
+	spaces := strings.Repeat("    ", threadNum)
+	print("%sTrd %d -> IP %04X:  %s\n", spaces, threadNum, t.IP, disasmText)
 	t.IP += ipIncrement
 }
