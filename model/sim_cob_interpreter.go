@@ -198,6 +198,16 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 		disasmText = sprint("HIDE OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
 		ipIncrement = 2
 
+	case opcodes.CI_SPIN_OBJECT:
+		speed := t.DataStack.PopWord()
+		acceleration := t.DataStack.PopWord()
+		if acceleration != 0 {
+			cobPanic("Accelerated spin unimplemented")
+		}
+		disasmText = sprint("SPIN OBJECT #%d BY AXIS #%d [speed %d, acc %d]", nextval1, nextval2, speed, acceleration)
+		so.PiecesMapping[nextval1].SetSpin(nextval2, speed, acceleration)
+		ipIncrement = 3
+
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Unimplemented or postponed stuff:
@@ -224,9 +234,6 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 	// 	ipIncrement = 3
 	// case opcodes.CI_ROTATE_OBJECT:
 	// 	disasmText = sprint("ROTATE OBJECT #%d BY AXIS #%d [speed, dir]", nextval1, nextval2)
-	// 	ipIncrement = 3
-	// case opcodes.CI_SPIN_OBJECT:
-	// 	disasmText = sprint("SPIN OBJECT #%d BY AXIS #%d [speed, dir]", nextval1, nextval2)
 	// 	ipIncrement = 3
 	// case opcodes.CI_STOP_SPIN_OBJECT:
 	// 	disasmText = sprint("STOP SPINNING OBJECT #%d BY AXIS #%d [deceleration]", nextval1, nextval2)

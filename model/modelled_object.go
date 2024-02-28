@@ -16,7 +16,12 @@ type ModelledObject struct {
 	Sibling        *ModelledObject
 	ModelForObject *Model
 
+	/////////////////////////////////
+	// Scripting-related stuff:
 	Hidden bool // may be hidden by scripts; should skip rendering then
+	// For SpinObject
+	IsSpinning [3]bool
+	TurnSpeed  [3]float64
 }
 
 func (mo *ModelledObject) Print(offset int) {

@@ -42,5 +42,6 @@ func sim3doModelAndScripts(openedFileName string, gAdapter graphicadapter.Graphi
 				timeSince, int(time.Second/timeSince))
 		}
 		object.CobStepAllThreads()
+		object.PerformScriptedMovementStep()
 	}
 }

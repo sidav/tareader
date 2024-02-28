@@ -131,13 +131,13 @@ func (cs *CobScript) PrintHumanReadableDisassembly() {
 
 		// 2 arguments
 		case opcodes.CI_MOVE_OBJECT:
-			disasmText = sprint("MOVE OBJECT #%d ('%s') BY AXIS #%d [position, dir]", nextval1, cs.Pieces[nextval1], nextval2)
+			disasmText = sprint("MOVE OBJECT #%d ('%s') BY AXIS #%d [position, speed]", nextval1, cs.Pieces[nextval1], nextval2)
 			ipIncrement = 3
 		case opcodes.CI_ROTATE_OBJECT:
-			disasmText = sprint("ROTATE OBJECT #%d ('%s') BY AXIS #%d [speed, dir]", nextval1, cs.Pieces[nextval1], nextval2)
+			disasmText = sprint("ROTATE OBJECT #%d ('%s') BY AXIS #%d [angle, speed]", nextval1, cs.Pieces[nextval1], nextval2)
 			ipIncrement = 3
 		case opcodes.CI_SPIN_OBJECT:
-			disasmText = sprint("SPIN OBJECT #%d BY AXIS #%d [speed, dir]", nextval1, nextval2)
+			disasmText = sprint("SPIN OBJECT #%d BY AXIS #%d [speed, acceleration]", nextval1, nextval2)
 			ipIncrement = 3
 		case opcodes.CI_STOP_SPIN_OBJECT:
 			disasmText = sprint("STOP SPINNING OBJECT #%d BY AXIS #%d [deceleration]", nextval1, nextval2)

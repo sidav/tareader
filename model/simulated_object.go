@@ -47,3 +47,9 @@ func (so *SimObject) mapPieces() {
 		print(" ok.\n")
 	}
 }
+
+func (so *SimObject) PerformScriptedMovementStep() {
+	for _, piece := range so.PiecesMapping {
+		piece.performScriptedMovement()
+	}
+}
