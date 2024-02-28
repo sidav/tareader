@@ -201,24 +201,24 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Unimplemented or postponed stuff:
-	// case opcodes.CI_EMIT_SFX_FROM_PIECE:
-	// 	disasmText = sprint("UNIMPLEMENTED: EMIT SFX FROM PIECE #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
-	// 	ipIncrement = 2
-	// case opcodes.CI_EXPLODE_PIECE:
-	// 	disasmText = sprint("UNIMPLEMENTED: EXPLODE PIECE #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
-	// 	ipIncrement = 2
-	// case opcodes.CI_CACHE:
-	// 	disasmText = sprint("UNIMPLEMENTED: CACHE OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
-	// 	ipIncrement = 2
-	// case opcodes.CI_DONTCACHE:
-	// 	disasmText = sprint("UNIMPLEMENTED: DISABLE CACHE FOR #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
-	// 	ipIncrement = 2
-	// case opcodes.CI_SHADE:
-	// 	disasmText = sprint("UNIMPLEMENTED: SHADE OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
-	// 	ipIncrement = 2
-	// case opcodes.CI_DONTSHADE:
-	// 	disasmText = sprint("UNIMPLEMENTED: DISABLE SHADE FOR #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
-	// 	ipIncrement = 2
+	case opcodes.CI_EMIT_SFX_FROM_PIECE:
+		disasmText = sprint("UNIMPLEMENTED: EMIT SFX FROM PIECE #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+		ipIncrement = 2
+	case opcodes.CI_EXPLODE_PIECE:
+		disasmText = sprint("UNIMPLEMENTED: EXPLODE PIECE #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+		ipIncrement = 2
+	case opcodes.CI_CACHE:
+		disasmText = sprint("UNIMPLEMENTED: CACHE OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+		ipIncrement = 2
+	case opcodes.CI_DONTCACHE:
+		disasmText = sprint("UNIMPLEMENTED: DISABLE CACHE FOR #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+		ipIncrement = 2
+	case opcodes.CI_SHADE:
+		disasmText = sprint("UNIMPLEMENTED: SHADE OBJECT #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+		ipIncrement = 2
+	case opcodes.CI_DONTSHADE:
+		disasmText = sprint("UNIMPLEMENTED: DISABLE SHADE FOR #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
+		ipIncrement = 2
 	// case opcodes.CI_MOVE_OBJECT:
 	// 	disasmText = sprint("MOVE OBJECT #%d BY AXIS #%d [position, dir]", nextval1, nextval2)
 	// 	ipIncrement = 3
