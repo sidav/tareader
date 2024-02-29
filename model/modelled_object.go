@@ -22,6 +22,10 @@ type ModelledObject struct {
 	// For SpinObject
 	IsSpinning [3]bool
 	TurnSpeed  [3]float64
+	// For MoveObject
+	CurrentMove [3]float64
+	TargetMove  [3]float64
+	MoveSpeed   [3]float64
 }
 
 func (mo *ModelledObject) Print(offset int) {
