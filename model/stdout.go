@@ -13,9 +13,9 @@ func sprint(text string, args ...interface{}) string {
 	return fmt.Sprintf(text, args...)
 }
 
-func printwait(text string, args ...interface{}) {
+func printwait(delayms int, text string, args ...interface{}) {
 	print(text, args...)
-	time.Sleep(3 * time.Second)
+	time.Sleep(time.Duration(delayms) * time.Millisecond)
 }
 
 func cobPanic(text string, args ...interface{}) {

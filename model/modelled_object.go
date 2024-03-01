@@ -20,8 +20,10 @@ type ModelledObject struct {
 	// Scripting-related stuff:
 	Hidden bool // may be hidden by scripts; should skip rendering then
 	// For SpinObject
-	IsSpinning [3]bool
-	TurnSpeed  [3]float64
+	IsSpinning  [3]bool
+	TurnSpeed   [3]float64
+	CurrentTurn [3]float64
+	TargetTurn  [3]float64
 	// For MoveObject
 	CurrentMove [3]float64
 	TargetMove  [3]float64

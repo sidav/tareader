@@ -7,6 +7,13 @@ func (piece *ModelledObject) SetSpin(axis, cobSpeed, cobAcceleration int32) {
 	piece.IsSpinning[axis] = true
 }
 
+func (piece *ModelledObject) SetTurn(axis, cobAngularSpeed, cobAngle int32) {
+	targAngle := CavedogAngleToFloatRadians(cobAngle)
+	turnSpeed := CavedogAngleSpeedToFloatRadians(cobAngularSpeed)
+	piece.TargetTurn[axis] = targAngle
+	piece.TurnSpeed[axis] = turnSpeed
+}
+
 func (piece *ModelledObject) SetMove(axis, cobPos, cobSpeed int32) {
 	// Notice that it seems the speed is always positive
 	speed := CavedogPositionSpeedToFloat(cobSpeed)
@@ -35,6 +42,11 @@ func (piece *ModelledObject) performScriptedMovement() {
 		piece.Matrix.RotateAroundZ(piece.TurnSpeed[2])
 	}
 
+	////////////////////////////////////////////////////
+	// perform turning
+	piece.doScriptedTurn()
+
+	///////////////////////////////////////////////////
 	// perform moving
 	var move [3]float64
 	for axis := range piece.CurrentMove {
@@ -46,4 +58,42 @@ func (piece *ModelledObject) performScriptedMovement() {
 		piece.CurrentMove[axis] += move[axis]
 	}
 	piece.Matrix.Translate(move[0], move[1], move[2])
+}
+
+// TODO: try fix ARMAVP bug here
+func (piece *ModelledObject) doScriptedTurn() {
+	for axis := range piece.CurrentTurn {
+
+		var turnVal float64
+		delta := piece.TargetTurn[axis] - piece.CurrentTurn[axis]
+		if delta > pi {
+			delta -= pi2
+		} else if delta <= -pi {
+			delta += pi2
+		}
+		if math.Abs(delta) < piece.TurnSpeed[axis] {
+			turnVal = delta
+			piece.TurnSpeed[axis] = 0
+		} else if delta < 0 {
+			turnVal = -piece.TurnSpeed[axis]
+		} else if delta > 0 {
+			turnVal = piece.TurnSpeed[axis]
+		}
+		piece.CurrentTurn[axis] += turnVal
+		switch axis {
+		case 0:
+			piece.Matrix.RotateAroundX(turnVal)
+		case 1:
+			piece.Matrix.RotateAroundY(turnVal)
+		case 2:
+			// TODO: change matrix operations so that the minus won't be needed?
+			piece.Matrix.RotateAroundZ(-turnVal)
+		}
+		// for piece.CurrentTurn[axis] < 0 {
+		// 	piece.CurrentTurn[axis] += pi2
+		// }
+		// for piece.CurrentTurn[axis] > pi2 {
+		// 	piece.CurrentTurn[axis] -= pi2
+		// }
+	}
 }

@@ -208,6 +208,13 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 		so.PiecesMapping[nextval1].SetSpin(nextval2, speed, acceleration)
 		ipIncrement = 3
 
+	case opcodes.CI_ROTATE_OBJECT:
+		angle := t.DataStack.PopWord()
+		speed := t.DataStack.PopWord()
+		disasmText = sprint("ROTATE OBJECT #%d BY AXIS #%d [to angle %d, speed %d]", nextval1, nextval2, angle, speed)
+		so.PiecesMapping[nextval1].SetTurn(nextval2, speed, angle)
+		ipIncrement = 3
+
 	case opcodes.CI_MOVE_OBJECT:
 		position := t.DataStack.PopWord()
 		speed := t.DataStack.PopWord()
@@ -236,9 +243,6 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 	case opcodes.CI_DONTSHADE:
 		disasmText = sprint("UNIMPLEMENTED: DISABLE SHADE FOR #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
 		ipIncrement = 2
-	// case opcodes.CI_ROTATE_OBJECT:
-	// 	disasmText = sprint("ROTATE OBJECT #%d BY AXIS #%d [speed, dir]", nextval1, nextval2)
-	// 	ipIncrement = 3
 	// case opcodes.CI_STOP_SPIN_OBJECT:
 	// 	disasmText = sprint("STOP SPINNING OBJECT #%d BY AXIS #%d [deceleration]", nextval1, nextval2)
 	// 	ipIncrement = 3
