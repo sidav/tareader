@@ -184,9 +184,10 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 		}
 		ipIncrement = 0 // DON'T auto-increase the IP, it will be manually increased below
 		sName := so.Script.ProcedureNames[nextval1]
-		disasmText = sprint("CALL SCRIPT #%d ('%s') WITH %d PARAMS FROM STACK", nextval1, sName, nextval2)
+		disasmText = sprint("FROM 0x%04X CALL SCRIPT #%d ('%s') AT ADDR 0x%04X WITH %d PARAMS FROM STACK\n",
+			t.IP, nextval1, sName, so.Script.ProcedureAddresses[nextval1], nextval2)
 		t.IP += 3
-		t.DoCall(nextval1, nextval2)
+		t.DoCall(so.Script.ProcedureAddresses[nextval1], nextval2)
 
 	case opcodes.CI_SHOW_OBJECT:
 		so.PiecesMapping[nextval1].Hidden = false
@@ -285,8 +286,7 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 		ipIncrement = 2
 
 	default:
-		// disasmText = sprint("<0x%08X (%s)>", opcode, sprintInt32AsBigEndianHex(opcode))
-		disasmText = sprint("Unknown opcode < 0x%08X > (next words 0x%08X and 0x%08X)", opcode, nextval1, nextval2)
+		disasmText = sprint("IP 0x%04X -> Unknown opcode < 0x%08X > (next words 0x%08X and 0x%08X)", t.IP, opcode, nextval1, nextval2)
 	}
 
 	spaces := strings.Repeat("    ", threadNum)
