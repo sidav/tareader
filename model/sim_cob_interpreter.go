@@ -222,6 +222,46 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 		so.PiecesMapping[nextval1].SetMove(nextval2, position, speed)
 		ipIncrement = 3
 
+	case opcodes.CI_MOVE_NOW:
+		position := t.DataStack.PopWord()
+		disasmText = sprint("MOVE NOW OBJECT #%02d BY AXIS #%d [position %d]", nextval1, nextval2, position)
+		so.PiecesMapping[nextval1].moveNow(nextval2, position)
+		ipIncrement = 3
+
+	case opcodes.CI_TURN_NOW:
+		angle := t.DataStack.PopWord()
+		disasmText = sprint("TURN NOW OBJECT #%02d BY AXIS #%d [angle %d]", nextval1, nextval2, angle)
+		so.PiecesMapping[nextval1].turnNow(nextval2, angle)
+		ipIncrement = 3
+
+	case opcodes.CI_STOP_SPIN_OBJECT:
+		deceleration := t.DataStack.PopWord()
+		if deceleration != 0 {
+			cobPanic("Decelerated StopSpin unimplemented")
+		}
+		disasmText = sprint("STOP SPINNING OBJECT #%d BY AXIS #%d [deceleration %d]", nextval1, nextval2, deceleration)
+		so.PiecesMapping[nextval1].IsSpinning[nextval2] = false
+		so.PiecesMapping[nextval1].TurnSpeed[nextval2] = 0.0
+		ipIncrement = 3
+
+	case opcodes.CI_WAIT_FOR_TURN:
+		if so.PiecesMapping[nextval1].CurrentTurn[nextval2] != so.PiecesMapping[nextval1].TargetTurn[nextval2] {
+			disasmText = sprint("WAIT FOR TURN OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
+			ipIncrement = 0
+		} else {
+			disasmText = sprint("END WAIT FOR TURN OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
+			ipIncrement = 3
+		}
+
+	case opcodes.CI_WAIT_FOR_MOVE:
+		if so.PiecesMapping[nextval1].CurrentMove[nextval2] != so.PiecesMapping[nextval1].TargetMove[nextval2] {
+			disasmText = sprint("WAIT FOR MOVE OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
+			ipIncrement = 0
+		} else {
+			disasmText = sprint("END WAIT FOR MOVE OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
+			ipIncrement = 3
+		}
+
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Unimplemented or postponed stuff:
@@ -243,21 +283,7 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 	case opcodes.CI_DONTSHADE:
 		disasmText = sprint("UNIMPLEMENTED: DISABLE SHADE FOR #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
 		ipIncrement = 2
-	// case opcodes.CI_STOP_SPIN_OBJECT:
-	// 	disasmText = sprint("STOP SPINNING OBJECT #%d BY AXIS #%d [deceleration]", nextval1, nextval2)
-	// 	ipIncrement = 3
-	// case opcodes.CI_MOVE_NOW:
-	// 	disasmText = sprint("MOVE NOW OBJECT #%02d BY AXIS #%d [position]", nextval1, nextval2)
-	// 	ipIncrement = 3
-	// case opcodes.CI_TURN_NOW:
-	// 	disasmText = sprint("TURN NOW OBJECT #%02d BY AXIS #%d [angle]", nextval1, nextval2)
-	// 	ipIncrement = 3
-	// case opcodes.CI_WAIT_FOR_TURN:
-	// 	disasmText = sprint("WAIT FOR TURN OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
-	// 	ipIncrement = 3
-	// case opcodes.CI_WAIT_FOR_MOVE:
-	// 	disasmText = sprint("WAIT FOR MOVE OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
-	// 	ipIncrement = 3
+
 	default:
 		// disasmText = sprint("<0x%08X (%s)>", opcode, sprintInt32AsBigEndianHex(opcode))
 		disasmText = sprint("Unknown opcode < 0x%08X > (next words 0x%08X and 0x%08X)", opcode, nextval1, nextval2)

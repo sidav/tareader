@@ -73,7 +73,7 @@ func (piece *ModelledObject) doScriptedTurn() {
 		}
 		if math.Abs(delta) < piece.TurnSpeed[axis] {
 			turnVal = delta
-			piece.TurnSpeed[axis] = 0
+			// piece.TurnSpeed[axis] = 0
 		} else if delta < 0 {
 			turnVal = -piece.TurnSpeed[axis]
 		} else if delta > 0 {
@@ -95,5 +95,35 @@ func (piece *ModelledObject) doScriptedTurn() {
 		// for piece.CurrentTurn[axis] > pi2 {
 		// 	piece.CurrentTurn[axis] -= pi2
 		// }
+	}
+}
+
+// Instant movement
+func (piece *ModelledObject) moveNow(axis, cobPos int32) {
+	var movement [3]float64
+	moveFloat := CavedogPositionToFloatPosition(cobPos)
+	movement[axis] = moveFloat - piece.CurrentMove[axis]
+	piece.CurrentMove[axis] = moveFloat
+	piece.Matrix.Translate(movement[0], movement[1], movement[2])
+}
+
+// Instant turn
+func (piece *ModelledObject) turnNow(axis, cobAngularPos int32) {
+	angle := CavedogAngleToFloatRadians(cobAngularPos)
+	delta := angle - piece.CurrentTurn[axis]
+	if delta > pi {
+		delta -= pi2
+	} else if delta <= -pi {
+		delta += pi2
+	}
+	piece.CurrentTurn[axis] += delta
+	switch axis {
+	case 0:
+		piece.Matrix.RotateAroundX(delta)
+	case 1:
+		piece.Matrix.RotateAroundY(delta)
+	case 2:
+		// TODO: change matrix operations so that the minus won't be needed?
+		piece.Matrix.RotateAroundZ(-delta)
 	}
 }
