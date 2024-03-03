@@ -7,22 +7,26 @@ import (
 	"totala_reader/ta_files_read/scripts/opcodes"
 )
 
-func (so *SimObject) CobStepAllThreads() {
+func (so *SimObject) CobExecAllThreads() {
 	for i := range so.CobMachine.Threads {
 		if so.CobMachine.Threads[i].Active {
 			// Skip thread if it sleeps
 			if so.CobMachine.Threads[i].SleepTicksRemaining > 0 {
-				so.CobMachine.Threads[i].SleepTicksRemaining--
-				so.CobMachine.Threads[i].SleepTicksRemaining -= 10 // TODO: remove (it's for debug)
+				// TODO: investigate units for sleep calculation... It's either not ticks or there is a bug
+				so.CobMachine.Threads[i].SleepTicksRemaining -= SimTicksPerSecond / 3
 				continue
 			}
 
-			so.cobStepThread(&so.CobMachine.Threads[i], i)
+			for so.cobStepThread(&so.CobMachine.Threads[i], i) {
+				// just continue
+			}
 		}
 	}
 }
 
-func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
+// Returns true if execution should continue
+func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) bool {
+	var continueExec = true
 	var ipIncrement int32 = 1
 	var nextval1, nextval2 int32
 	opcode := so.Script.RawCode[t.IP]
@@ -45,6 +49,7 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 		} else {
 			disasmText = sprint("RETURN (call stack empty, deactivating the thread)")
 		}
+		continueExec = false
 		ipIncrement = 0
 	// case opcodes.CI_ALLOC_LOCAL_VAR:
 	// 	disasmText = "?? ALLOC LOCAL VAR ??"
@@ -124,13 +129,16 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 		mask := t.DataStack.PopWord()
 		sigResult := so.CobMachine.Signal(mask)
 		disasmText = sprint("SIGNAL [0x%08X], stopped threads: [%s]", mask, sigResult)
+		continueExec = false
 	case opcodes.CI_SLEEP:
 		duration := t.DataStack.PopWord()
 		if duration < 0 {
 			cobPanic("Negative sleep duration")
 		}
 		disasmText = sprint("SLEEP FOR %d TICKS", duration)
+		// TODO: investigate units for sleep calculation... It's either not ticks or there is a bug
 		t.SetSleep(duration)
+		continueExec = false
 
 	// 1 argument
 	case opcodes.CI_PUSH_CONST:
@@ -249,6 +257,7 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 		if so.PiecesMapping[nextval1].CurrentTurn[nextval2] != so.PiecesMapping[nextval1].TargetTurn[nextval2] {
 			disasmText = sprint("WAIT FOR TURN OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
 			ipIncrement = 0
+			continueExec = false
 		} else {
 			disasmText = sprint("END WAIT FOR TURN OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
 			ipIncrement = 3
@@ -258,6 +267,7 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 		if so.PiecesMapping[nextval1].CurrentMove[nextval2] != so.PiecesMapping[nextval1].TargetMove[nextval2] {
 			disasmText = sprint("WAIT FOR MOVE OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
 			ipIncrement = 0
+			continueExec = false
 		} else {
 			disasmText = sprint("END WAIT FOR MOVE OBJECT #%02d BY AXIS #%d", nextval1, nextval2)
 			ipIncrement = 3
@@ -292,4 +302,5 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) {
 	spaces := strings.Repeat("    ", threadNum)
 	print("%sTrd %d -> IP %04X:  %s\n", spaces, threadNum, t.IP, disasmText)
 	t.IP += ipIncrement
+	return continueExec
 }

@@ -41,7 +41,7 @@ func sim3doModelAndScripts(openedFileName string, gAdapter graphicadapter.Graphi
 			pp("                         with flush: %v ~> %d FPS",
 				timeSince, int(time.Second/timeSince))
 		}
-		object.CobStepAllThreads()
+		object.CobExecAllThreads()
 		object.PerformScriptedMovementStep()
 	}
 }
