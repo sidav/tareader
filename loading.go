@@ -47,7 +47,7 @@ func loadModelAndCobByFilename(filename string) (*object3d.Object, *scripts.CobS
 	items, _ := os.ReadDir(folder3do)
 	for _, item := range items {
 		modelName := strings.ToLower(item.Name())
-		if strings.Contains(modelName, baseName) {
+		if strings.Contains(modelName, baseName+".") {
 			openedFileName := folder3do + item.Name()
 			pp("Opening model %s", openedFileName)
 			r := &tafilesread.Reader{}
@@ -62,7 +62,7 @@ func loadModelAndCobByFilename(filename string) (*object3d.Object, *scripts.CobS
 		if !strings.Contains(cobName, ".cob") {
 			continue
 		}
-		if strings.Contains(cobName, baseName) {
+		if strings.Contains(cobName, baseName+".") {
 			openedFileName := folderCob + item.Name()
 			pp("Opening COB %s", openedFileName)
 			r := &tafilesread.Reader{}
