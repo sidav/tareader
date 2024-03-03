@@ -161,6 +161,14 @@ func (m *Matrix4x4) RotateAroundY(radians float64) {
 	// m.Vals = transformMtrx.MultiplyByMatrix4x4(m).Vals
 }
 
+// Ignores applied translation. TODO: think how to optimize it (3 matrix operations are too much)
+func (m *Matrix4x4) RotateAroundLocalY(radians float64) {
+	x, y, z := m.Vals[0][3], m.Vals[1][3], m.Vals[2][3]
+	m.Translate(-x, -y, -z)
+	m.RotateAroundY(radians)
+	m.Translate(x, y, z)
+}
+
 func (m *Matrix4x4) RotateAroundZ(radians float64) {
 	sin := math.Sin(radians)
 	cos := math.Cos(radians)
@@ -188,4 +196,25 @@ func (m *Matrix4x4) RotateAroundZ(radians float64) {
 	// 	},
 	// }
 	// m.Vals = transformMtrx.MultiplyByMatrix4x4(m).Vals
+}
+
+// Useful for local rotations
+func (m *Matrix4x4) DiscardTranslations() {
+	x, y, z := m.Vals[0][3], m.Vals[1][3], m.Vals[2][3]
+	// row 1
+	m.Vals[0][0] -= x * m.Vals[3][0]
+	m.Vals[0][1] -= x * m.Vals[3][1]
+	m.Vals[0][2] -= x * m.Vals[3][2]
+	m.Vals[0][3] -= x * m.Vals[3][3]
+	// row 2
+	m.Vals[1][0] -= y * m.Vals[3][0]
+	m.Vals[1][1] -= y * m.Vals[3][1]
+	m.Vals[1][2] -= y * m.Vals[3][2]
+	m.Vals[1][3] -= y * m.Vals[3][3]
+	// row 3
+	m.Vals[2][0] -= z * m.Vals[3][0]
+	m.Vals[2][1] -= z * m.Vals[3][1]
+	m.Vals[2][2] -= z * m.Vals[3][2]
+	m.Vals[2][3] -= z * m.Vals[3][3]
+	// row 4 is unchanged
 }

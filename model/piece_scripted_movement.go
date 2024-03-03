@@ -31,6 +31,9 @@ func (piece *ModelledObject) SetMove(axis, cobPos, cobSpeed int32) {
 }
 
 func (piece *ModelledObject) performScriptedMovement() {
+	// All rotations will be local. TODO: think how to optimize it
+	// (a variant: maybe apply translations by piece.CurrentMove only in the renderer, together with XYZFromParent?)
+	piece.Matrix.DiscardTranslations()
 	// perform spinning
 	if piece.IsSpinning[0] {
 		piece.Matrix.RotateAroundX(piece.TurnSpeed[0])
@@ -48,19 +51,17 @@ func (piece *ModelledObject) performScriptedMovement() {
 
 	///////////////////////////////////////////////////
 	// perform moving
-	var move [3]float64
 	for axis := range piece.CurrentMove {
 		if math.Abs(piece.TargetMove[axis]-piece.CurrentMove[axis]) < math.Abs(piece.MoveSpeed[axis]) {
-			move[axis] = piece.TargetMove[axis] - piece.CurrentMove[axis]
+			piece.CurrentMove[axis] += piece.TargetMove[axis] - piece.CurrentMove[axis]
 		} else {
-			move[axis] = piece.MoveSpeed[axis]
+			piece.CurrentMove[axis] += piece.MoveSpeed[axis]
 		}
-		piece.CurrentMove[axis] += move[axis]
 	}
-	piece.Matrix.Translate(move[0], move[1], move[2])
+	// "Un-local" all the operations.
+	piece.Matrix.Translate(piece.CurrentMove[0], piece.CurrentMove[1], piece.CurrentMove[2])
 }
 
-// TODO: try fix ARMAVP bug here
 func (piece *ModelledObject) doScriptedTurn() {
 	for axis := range piece.CurrentTurn {
 
@@ -104,6 +105,7 @@ func (piece *ModelledObject) moveNow(axis, cobPos int32) {
 	moveFloat := CavedogPositionToFloatPosition(cobPos)
 	movement[axis] = moveFloat - piece.CurrentMove[axis]
 	piece.CurrentMove[axis] = moveFloat
+	// The following is maybe redundant, as the transition is applied in performScriptedMovement?
 	piece.Matrix.Translate(movement[0], movement[1], movement[2])
 }
 
