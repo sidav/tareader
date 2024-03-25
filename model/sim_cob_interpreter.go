@@ -294,6 +294,13 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) bool {
 	case opcodes.CI_DONTSHADE:
 		disasmText = sprint("UNIMPLEMENTED: DISABLE SHADE FOR #%02d ('%s')", nextval1, so.Script.Pieces[nextval1])
 		ipIncrement = 2
+	case opcodes.CI_ATTACH_UNIT:
+		pieceNum := t.DataStack.PopWord()
+		unitId := t.DataStack.PopWord()
+		disasmText = sprint("UNIMPLEMENTED: ATTACH UNIT %d TO PIECE %d", unitId, pieceNum)
+	case opcodes.CI_DROP_UNIT:
+		unitId := t.DataStack.PopWord()
+		disasmText = sprint("UNIMPLEMENTED: DROP UNIT %d", unitId)
 
 	default:
 		disasmText = sprint("IP 0x%04X -> Unknown opcode < 0x%08X > (next words 0x%08X and 0x%08X)", t.IP, opcode, nextval1, nextval2)

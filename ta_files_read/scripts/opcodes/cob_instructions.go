@@ -27,6 +27,8 @@ const (
 	CI_SIGNAL              = 0x10067000
 	CI_RETURN              = 0x10065000
 	CI_SET_VALUE           = 0x10082000
+	CI_ATTACH_UNIT         = 0x10083000
+	CI_DROP_UNIT           = 0x10084000
 
 	// 1 arg
 	CI_SHOW_OBJECT         = 0x10005000

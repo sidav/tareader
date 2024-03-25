@@ -81,6 +81,10 @@ func (cs *CobScript) PrintHumanReadableDisassembly() {
 			disasmText = "RANDOM [FROM TO]"
 		case opcodes.CI_SLEEP:
 			disasmText = "SLEEP"
+		case opcodes.CI_ATTACH_UNIT:
+			disasmText = "ATTACH UNIT [pop2_unit pop1_piecenum]"
+		case opcodes.CI_DROP_UNIT:
+			disasmText = "DROP UNIT [unit]"
 
 		// 1 argument
 		case opcodes.CI_PUSH_CONST:

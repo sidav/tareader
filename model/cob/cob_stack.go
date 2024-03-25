@@ -3,7 +3,7 @@ package cob
 import "fmt"
 
 // const stackMaxDepth = 16
-const stackMaxDepth = 1024 // TEMPORARY VALUE!!!
+const stackMaxDepth = 64 // TEMPORARY VALUE!!!
 
 type Stack struct {
 	data      [stackMaxDepth]int32
