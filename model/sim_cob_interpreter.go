@@ -94,6 +94,10 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) bool {
 		a := t.DataStack.PopWord()
 		t.DataStack.Push(a | b)
 		disasmText = sprint("BITWISE OR [%d | %d] (pushing %d)", a, b, t.DataStack.Peek())
+	case opcodes.CI_LOGICAL_NOT: // TODO: check if it really logical (alternative is bitwise)
+		a := t.DataStack.PopWord()
+		t.DataStack.Push(1 ^ a)
+		disasmText = sprint("? LOGICAL NOT %d (pushing %d) ?", a, t.DataStack.Peek())
 	case opcodes.CI_SETSIGMASK:
 		// Set a mask for thread-killing routine (SIGNAL opcode)
 		t.SigMask = t.DataStack.PopWord()

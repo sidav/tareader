@@ -22,7 +22,7 @@ const (
 	CI_LOGICAL_AND         = 0x10057000
 	CI_LOGICAL_OR          = 0x10058000
 	CI_LOGICAL_XOR         = 0x10059000
-	CI_NEG                 = 0x1005A000
+	CI_LOGICAL_NOT         = 0x1005A000
 	CI_SETSIGMASK          = 0x10068000
 	CI_SIGNAL              = 0x10067000
 	CI_RETURN              = 0x10065000

@@ -55,8 +55,8 @@ func (cs *CobScript) PrintHumanReadableDisassembly() {
 			disasmText = "COMPARE GREATER OR EQUAL"
 		case opcodes.CI_BITWISE_OR:
 			disasmText = "BITWISE OR"
-		case opcodes.CI_NEG:
-			disasmText = "BITWISE NEGATE"
+		case opcodes.CI_LOGICAL_NOT:
+			disasmText = "LOGICAL NOT"
 		case opcodes.CI_LOGICAL_OR:
 			disasmText = "LOGICAL OR"
 		case opcodes.CI_LOGICAL_XOR:
