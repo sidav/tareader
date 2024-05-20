@@ -49,14 +49,16 @@ func ReadTextureFromReader(r *tafilesread.Reader, verbose bool) []*GafEntry {
 			Name: name,
 		}
 		// Read each GAF frame entry for GAF entry
+		frameEntryOffset := 0
 		for gfe := 0; gfe < frames; gfe++ {
-			ptrFrameEntry := r.ReadIntFromBytesArray(off, 40)
-			unknown := r.ReadIntFromBytesArray(off, 44)
+			ptrFrameEntry := r.ReadIntFromBytesArray(off, 40+frameEntryOffset)
+			unknown := r.ReadIntFromBytesArray(off, 44+frameEntryOffset)
 			if describeActions {
 				fmt.Printf("    GAF frame entry %d:\n", gfe)
 				fmt.Printf("      Pointer to the data: %d, unknown value: %d\n", ptrFrameEntry, unknown)
 			}
 			entry.Frames = append(entry.Frames, readGafFrameData(r, ptrFrameEntry))
+			frameEntryOffset += 8
 		}
 		entriesArray[index] = entry
 	}
