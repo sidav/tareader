@@ -84,9 +84,17 @@ func readGafFrameData(r *tafilesread.Reader, offset int) *GafFrame {
 
 	frame := &GafFrame{}
 
+	// 	If the FramePointers
+	// member were not 0, then instead of pixels, PtrFrameData would point to a
+	// list of pointers that had that many entries.
+	if framePointers > 1 {
+		panic("Multi frame-pointer reading is not implemented yet!")
+		frame.Pixels = [][]byte{{0}}
+		return frame
+	}
 	// read the raw data itself
 	if compressed {
-		panic("Compressed frame data reading not implemented yet!")
+		frame.Pixels = readCompressedPixels(r, ptrFrameData, width, height)
 	} else {
 		frame.Pixels = readUncompressedPixels(r, ptrFrameData, width, height)
 	}
@@ -103,5 +111,48 @@ func readUncompressedPixels(r *tafilesread.Reader, offset, width, height int) []
 			pixels[i][j] = r.ReadByteFromBytesArray(offset, index)
 		}
 	}
+	return pixels
+}
+
+func readCompressedPixels(r *tafilesread.Reader, offset, width, height int) [][]uint8 {
+	var pixels = make([][]uint8, width)
+	for i := 0; i < width; i++ {
+		pixels[i] = make([]uint8, height)
+	}
+
+	currOffset := 0
+	fmt.Printf("Reading compressed entry... Size %dx%d;\n", width, height)
+
+	for currY := 0; currY < height; currY++ {
+		currX := 0
+		thisLineOffset := 0
+		thisLineBytes := r.ReadUint16FromBytesArray(offset, currOffset)
+		thisLineOffset += 2
+
+		for thisLineOffset < thisLineBytes+2 {
+			mask := r.ReadByteFromBytesArray(offset, currOffset+thisLineOffset)
+			thisLineOffset++
+
+			if mask&0x01 == 0x01 { // transparency: skip (mask >> 1) pixels
+				currX += int(mask >> 1)
+			} else if mask&0x02 == 0x02 { // copy next byte ((mask >> 2) + 1) times
+				nextByte := r.ReadByteFromBytesArray(offset, currOffset+thisLineOffset)
+				thisLineOffset++
+				for i := byte(0); i < (mask>>2)+1; i++ {
+					pixels[currX][currY] = nextByte
+					currX++
+				}
+			} else { // copy next ((mask >> 0x02) + 1) bytes to output
+				for i := byte(0); i < (mask>>0x02)+1; i++ {
+					nextByte := r.ReadByteFromBytesArray(offset, currOffset+thisLineOffset)
+					thisLineOffset++
+					pixels[currX][currY] = nextByte
+					currX++
+				}
+			}
+		}
+		currOffset += thisLineOffset
+	}
+
 	return pixels
 }
