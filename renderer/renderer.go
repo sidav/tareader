@@ -39,16 +39,10 @@ func (r *Renderer) drawModelledObject(currObj *ModelledObject, parentWrldMtrx *M
 	mdl := currObj.ModelForObject
 
 	// Dummy animation code, safe to delete
-	const rotateByDegrees = 1.0
-	if currObj.Name == "base" || currObj.Name == "ground" {
-		currObj.Matrix.RotateAroundY(rotateByDegrees * 3.14159265 / 180)
-	}
-	if currObj.Name == "charged" || currObj.Name == "fork1" {
-		currObj.Matrix.RotateAroundX(-3 * rotateByDegrees * 3.14159265 / 180)
-	}
-	if currObj.Name == "luparm" || currObj.Name == "fork2" {
-		currObj.Matrix.RotateAroundX(3 * rotateByDegrees * 3.14159265 / 180)
-	}
+	// const rotateByDegrees = 1.0
+	// if currObj.Name == "base" || currObj.Name == "ground" {
+	// 	currObj.Matrix.RotateAroundY(rotateByDegrees * 3.14159265 / 180)
+	// }
 	// Dummy animation code ended
 
 	currWrldMtrx := currObj.Matrix.Dup() // it will be transformed to world one later, it's a dup just for now

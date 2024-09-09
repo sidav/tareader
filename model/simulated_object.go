@@ -32,6 +32,12 @@ func (so *SimObject) InitFromCavedogData(cavedogModel *object3d.Object,
 			panic("COB INIT ERROR: No 'Create' func found!")
 		}
 		so.CobMachine.AllocNewThread(createFuncAddr, 0)
+
+		// Debug purposes: run GO script to show some animation.
+		goFuncAddr := cobScript.FindFuncAddressByName("Go")
+		if goFuncAddr != -1 {
+			so.CobMachine.AllocNewThread(goFuncAddr, 0)
+		}
 	}
 }
 
