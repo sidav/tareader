@@ -38,6 +38,10 @@ func (r *Renderer) RenderObject(rootObject *ModelledObject) {
 func (r *Renderer) drawModelledObject(currObj *ModelledObject, parentWrldMtrx *Matrix4x4) {
 	mdl := currObj.ModelForObject
 
+	if currObj.Hidden {
+		return
+	}
+
 	// Dummy animation code, safe to delete
 	// const rotateByDegrees = 1.0
 	// if currObj.Name == "base" || currObj.Name == "ground" {
