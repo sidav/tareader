@@ -56,14 +56,17 @@ func ReadTextureFromReader(r *tafilesread.Reader, verbose bool) []*GafEntry {
 				fmt.Printf("    GAF frame entry %d:\n", gfe)
 				fmt.Printf("      Pointer to the data: %d, unknown value: %d\n", ptrFrameEntry, unknown)
 			}
-			entry.Frames = append(entry.Frames, readGafFrameData(r, ptrFrameEntry))
+			// TODO: use xPos, yPos from GAF frame data.
+			frame, _, _ := readGafFrameData(r, ptrFrameEntry)
+			entry.Frames = append(entry.Frames, frame)
 		}
 		entriesArray[index] = entry
 	}
+
 	return entriesArray
 }
 
-func readGafFrameData(r *tafilesread.Reader, offset int) *GafFrame {
+func readGafFrameData(r *tafilesread.Reader, offset int) (*GafFrame, int, int) {
 	width := r.ReadUint16FromBytesArray(offset, 0)
 	height := r.ReadUint16FromBytesArray(offset, 2)
 	xPos := r.ReadUint16FromBytesArray(offset, 4)
@@ -84,21 +87,26 @@ func readGafFrameData(r *tafilesread.Reader, offset int) *GafFrame {
 
 	frame := &GafFrame{}
 
-	// 	If the FramePointers
-	// member were not 0, then instead of pixels, PtrFrameData would point to a
-	// list of pointers that had that many entries.
+	// If the FramePointers is not 0, then instead of pixels, PtrFrameData points to a
+	// list of pointers that has that many GafFrameData entries.
 	if framePointers > 1 {
-		panic("Multi frame-pointer reading is not implemented yet!")
-		frame.Pixels = [][]byte{{0}}
-		return frame
+		fmt.Printf("FRAME WITH SUBFRAMES: size %dx%d at %d,%d\n", width, height, xPos, yPos)
+		for fnum := 0; fnum < framePointers; fnum++ {
+			pointer := r.ReadIntFromBytesArray(ptrFrameData, fnum*4)
+			sf, sfxpos, sfypos := readGafFrameData(r, pointer)
+			fmt.Printf("  subframe size: %dx%d at %d,%d\n", len(sf.Pixels), len(sf.Pixels[0]), sfxpos, sfypos)
+			frame.squishSubframe(0, 0, width, height, sf, 0, 0)
+		}
+		return frame, xPos, yPos
 	}
-	// read the raw data itself
+	// Else, if the FramePointers is 0, then PtrFrameData points to an array of pixel bytes.
+	// Thus we can read the raw data itself:
 	if compressed {
 		frame.Pixels = readCompressedPixels(r, ptrFrameData, width, height)
 	} else {
 		frame.Pixels = readUncompressedPixels(r, ptrFrameData, width, height)
 	}
-	return frame
+	return frame, xPos, yPos
 }
 
 func readUncompressedPixels(r *tafilesread.Reader, offset, width, height int) [][]uint8 {
@@ -119,9 +127,7 @@ func readCompressedPixels(r *tafilesread.Reader, offset, width, height int) [][]
 	for i := 0; i < width; i++ {
 		pixels[i] = make([]uint8, height)
 	}
-
 	currOffset := 0
-	fmt.Printf("Reading compressed entry... Size %dx%d;\n", width, height)
 
 	for currY := 0; currY < height; currY++ {
 		currX := 0
@@ -155,4 +161,22 @@ func readCompressedPixels(r *tafilesread.Reader, offset, width, height int) [][]
 	}
 
 	return pixels
+}
+
+// Subframes not always have the same size.
+// I'm not sure if we really need to squish them, but let it be for now
+func (f *GafFrame) squishSubframe(x, y, width, height int, subframe *GafFrame, sx, sy int) {
+	if len(f.Pixels) == 0 {
+		f.Pixels = make([][]uint8, width)
+		for i := 0; i < width; i++ {
+			f.Pixels[i] = make([]uint8, height)
+		}
+	}
+	for sfx := 0; sfx < len(subframe.Pixels); sfx++ {
+		for sfy := 0; sfy < len(subframe.Pixels[0]); sfy++ {
+			if subframe.Pixels[sfx][sfy] != 0 {
+				f.Pixels[(sx-x)+sfx][(sy-y)+sfy] = subframe.Pixels[sfx][sfy]
+			}
+		}
+	}
 }
