@@ -12,8 +12,8 @@ func (so *SimObject) CobExecAllThreads() {
 		if so.CobMachine.Threads[i].Active {
 			// Skip thread if it sleeps
 			if so.CobMachine.Threads[i].SleepTicksRemaining > 0 {
-				// TODO: investigate units for sleep calculation... It's either not ticks or there is a bug
-				so.CobMachine.Threads[i].SleepTicksRemaining -= SimTicksPerSecond / 3
+				// Ticks are calculated at SLEEP command execution routine, see below.
+				so.CobMachine.Threads[i].SleepTicksRemaining--
 				continue
 			}
 
@@ -140,9 +140,15 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) bool {
 		if duration < 0 {
 			cobPanic("Negative sleep duration")
 		}
-		disasmText = sprint("SLEEP FOR %d TICKS", duration)
+
 		// TODO: investigate units for sleep calculation... It's either not ticks or there is a bug
-		t.SetSleep(duration)
+		// Current implementation: consider sleep value as milliseconds
+
+		// It's duration / (1000/simTicksPerSecond); here 1000/SimTicksPerSecond is amount of ms per COB tick
+		// +500 is here for proper integer rounding
+		ticksToSleep := (SimTicksPerSecond*duration + 500) / 1000
+		disasmText = sprint("SLEEP FOR %dms (%d ticks)", duration, ticksToSleep)
+		t.SetSleep(ticksToSleep)
 		continueExec = false
 
 	// 1 argument

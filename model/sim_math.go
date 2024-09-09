@@ -1,6 +1,8 @@
 package model
 
+// This value is NOT arbitrary, as the COB machine logic ticks are (in current implementation) tied to FPS.
 const SimTicksPerSecond = 60
+
 const pi = 3.1415926535897932
 const pi2 = 2 * pi
 
