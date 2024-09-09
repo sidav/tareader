@@ -26,7 +26,9 @@ func (e *GafEntry) Export() {
 				})
 			}
 		}
+		fmt.Printf("Exporting entry %s, frame %d (%d total)... ", e.Name, i, len(e.Frames))
 		file, _ := os.Create(fmt.Sprintf("export/%s_%d.png", e.Name, i))
+		fmt.Printf("done.\n")
 		png.Encode(file, img)
 	}
 }

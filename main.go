@@ -20,7 +20,9 @@ import (
 
 func main() {
 	var doProfiling bool
+	var exportGAFtoPNG bool
 	flag.BoolVar(&doProfiling, "p", false, "Perform CPU pprof recording")
+	flag.BoolVar(&exportGAFtoPNG, "export", false, "Export GAF images as PNGs if GAF is opened")
 	flag.Parse()
 
 	if doProfiling {
@@ -65,7 +67,7 @@ func main() {
 		return
 	}
 	if strings.Contains(strings.ToLower(openedFile), ".gaf") {
-		onlyShowGafContents(r, gAdapter)
+		onlyShowGafContents(r, gAdapter, exportGAFtoPNG)
 		return
 	}
 }
@@ -111,17 +113,23 @@ func onlyShow3doModel(r *binaryreader.Reader, gAdapter graphicadapter.GraphicBac
 	}
 }
 
-func onlyShowGafContents(r *binaryreader.Reader, gAdapter graphicadapter.GraphicBackend) {
-	rend := renderer.Renderer{}
-	rend.Init(gAdapter)
+func onlyShowGafContents(r *binaryreader.Reader, gAdapter graphicadapter.GraphicBackend, export bool) {
 	pp("Opening texture %s\n", r.FileName)
 	gafEntries := texture.ReadTextureFromReader(r, true)
-	for _, ge := range gafEntries {
-		gAdapter.Clear()
-		rend.DrawGafFrame(ge)
-		gAdapter.Flush()
-		fmt.Printf("%s\n", ge.Name)
-		time.Sleep(1 * time.Second / 2)
+	if export {
+		for _, e := range gafEntries {
+			e.Export()
+		}
+	} else {
+		rend := renderer.Renderer{}
+		rend.Init(gAdapter)
+		for _, ge := range gafEntries {
+			gAdapter.Clear()
+			rend.DrawGafFrame(ge)
+			gAdapter.Flush()
+			fmt.Printf("%s\n", ge.Name)
+			time.Sleep(1 * time.Second / 2)
+		}
 	}
 }
 
