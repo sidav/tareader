@@ -9,3 +9,4 @@
 *.H
 *.BAT
 *.pprof
+export/*
