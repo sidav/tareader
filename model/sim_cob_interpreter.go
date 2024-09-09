@@ -51,8 +51,9 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) bool {
 		}
 		continueExec = false
 		ipIncrement = 0
-	// case opcodes.CI_ALLOC_LOCAL_VAR:
-	// 	disasmText = "?? ALLOC LOCAL VAR ??"
+	case opcodes.CI_ALLOC_LOCAL_VAR:
+		disasmText = "ALLOC LOCAL VAR"
+		t.DoAllocNewLocalVar()
 	// case opcodes.CI_GET_VALUE:
 	// 	disasmText = "GET VALUE [port]"
 	// case opcodes.CI_GET_VALUE_WITH_ARGS:
@@ -162,15 +163,15 @@ func (so *SimObject) cobStepThread(t *cob.CobThread, threadNum int) bool {
 			break
 		}
 		ipIncrement = 2
-	// case opcodes.CI_PUSH_LOCAL_VAR:
-	// 	t.DataStack.Push(t.LVars[nextval1])
-	// 	disasmText = sprint("PUSH LOCAL VAR #%d (pushed %d)", nextval1, t.DataStack.Peek())
-	// 	ipIncrement = 2
-	// case opcodes.CI_POP_LOCAL_VAR:
-	// 	val := t.DataStack.PopWord()
-	// 	t.LVars[nextval1] = val
-	// 	disasmText = sprint("POP TO LOCAL VAR #%d ($%d = %d)", nextval1, nextval1, val)
-	// 	ipIncrement = 2
+	case opcodes.CI_PUSH_LOCAL_VAR: // UNSURE if the implementation is correct
+		t.DataStack.Push(t.GetCurrentScopeLocalVar(nextval1))
+		disasmText = sprint("PUSH LOCAL VAR #%d (pushed %d)", nextval1, t.DataStack.Peek())
+		ipIncrement = 2
+	case opcodes.CI_POP_LOCAL_VAR: // UNSURE if the implementation is correct
+		val := t.DataStack.PopWord()
+		t.SetCurrentScopeLocalVar(val, nextval1)
+		disasmText = sprint("POP TO LOCAL VAR #%d (var $%d = %d)", nextval1, nextval1, val)
+		ipIncrement = 2
 	case opcodes.CI_PUSH_STATIC_VAR:
 		t.DataStack.Push(so.CobMachine.SVars[nextval1])
 		disasmText = sprint("PUSH STATIC VAR #%d (pushed %d)", nextval1, t.DataStack.Peek())
